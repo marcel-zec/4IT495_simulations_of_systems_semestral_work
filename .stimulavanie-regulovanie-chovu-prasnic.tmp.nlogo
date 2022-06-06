@@ -1,4 +1,9 @@
 ; CODE START ;
+extensions [array]
+
+globals [water mud building]
+
+
 ; agents
 breed [people person]
 people-own [pace headx heady move]
@@ -14,67 +19,60 @@ to setup
 end
 
 to setup-farm
+  print water
   ask patches [
     set pcolor green - 3
     let x pxcor    ; x = Patches.thisPatchXcor
     let y pycor
 
-    setup-fence x y
-
-
-    ;building
-
-
-    ;water
-     if ((x > -64) and (x < -31) and (y > 0) and (y < 8))
-     [
-     set pcolor blue + 1
-     ]
-
-    ;mud
-    if ((x > -28) and (x < 0) and (y > 15) and (y < 32))
-    [
-     set pcolor brown
-    ]
-    if ((x > -24) and (x < 0) and (y > 15) and (y < 32))
-    [
-     set pcolor brown - 1
-    ]
-
-    if ((x > -19) and (x < 0) and (y > 15) and (y < 32))
-    [
-     set pcolor brown - 2
-    ]
+    setup-building x y
+    setup-water x y
+    setup-mud x y
   ]
 end
 
-to setup-fence [x y]
-    if((x > -65) and (x < 1) and (y > -1) and (y < 1))
-    or ((x > -65) and (x < 1) and (y > 31) and (y < 33))
-    or ((x > -65) and (x < -63) and (y > -1) and (y < 33))
-    or ((x > -1) and (x < 1) and (y > -1) and (y < 33))
-    [
-     set pcolor black + 1
-    ]
-end
-
 to setup-building [x y]
-    if ((x > -32) and (x < 0) and (y > 0) and (y < 16))
+    if ((x > -1) and (x < 28) and (y > -1) and (y < 15))
     [
      set pcolor brown + 3
     ]
-    if ((x > -32) and (x < 0) and (y > 2) and (y < 14))
+    if ((x > -1) and (x < 28) and (y > 1) and (y < 13))
     [
      set pcolor brown + 2
     ]
-    if ((x > -32) and (x < 0) and (y > 5) and (y < 11))
+    if ((x > -1) and (x < 28) and (y > 4) and (y < 10))
     [
      set pcolor brown + 1
     ]
-    if ((x > -32) and (x < 0) and (y > 7) and (y < 9))
+     if ((x > -1) and (x < 28) and (y > 6) and (y < 8))
     [
      set pcolor black + 3
     ]
+end
+
+
+to setup-water [x y]
+     if ((x > 58) and (x < 66) and (y > -2) and (y < 34))
+     [
+     set pcolor blue + 1
+     ]
+end
+
+to setup-mud [x y]
+     if ((x > -2) and (x < 36) and (y > 20) and (y < 34))
+    [
+     set pcolor brown - 2
+    ]
+    if ((x > 32) and (x < 36) and (y > 20) and (y < 34))
+    or
+    (((x > -2) and (x < 36) and (y > 2) and (y < 24)))
+    [
+     set pcolor brown - 1
+    ]
+end
+
+to-report on-water
+
 end
 
 
@@ -122,8 +120,8 @@ GRAPHICS-WINDOW
 0
 0
 1
--64
 0
+64
 0
 32
 0
