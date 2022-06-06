@@ -1,24 +1,88 @@
 ; CODE START ;
 extensions [array]
 
-globals [building-x building-y]
+globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min]
 
 
 ; agents
 breed [people person]
-people-own [pace headx heady move]
+people-own [pace headx heady move goalx goaly]
 
 breed [pigs pig]
-pigs-own [pace headx heady move]
+pigs-own [pace headx heady move goalx goaly]
+
+to go
+  make-step
+end
+
+to make-step
+  ask pigs[
+
+
+    if can-move? pace [
+     facexy goalx goaly
+    ]
+
+    ifelse(patch-ahead pace != nobody) and ;je v smere vobec nieco (dlazdica)?
+      ((not any? turtles-on patch-ahead pace) or ;nikto z mnoziny vsetkych agentov nie je pred nim vo vzdialenosti
+        ((count turtles-on patch-ahead pace = 1) and;ak je na dlazdici len jeden agent, som to asi ja
+        (one-of turtles-on patch-ahead pace = self)) ;overim ci to teda nie som ja
+      )[
+        jump pace       ;poskocenie
+    ] [        ;else
+        let angle 45
+       if random-boolean [
+          set angle 65
+        ]
+      ifelse(patch-right-and-ahead angle pace != nobody) and ;je v smere vobec nieco (dlazdica)?
+      ((not any? turtles-on patch-right-and-ahead angle pace) or ;nikto z mnoziny vsetkych agentov nie je pred nim vo vzdialenosti
+        ((count turtles-on patch-right-and-ahead angle pace = 1) and;ak je na dlazdici len jeden agent, som to asi ja
+        (one-of turtles-on patch-right-and-ahead angle pace = self)) ;overim ci to teda nie som ja
+      )[
+         right angle
+        jump pace       ;poskocenie
+         print "go right"
+        print angle
+      ] [ ;else
+        set angle 45
+        if random-boolean [
+          set angle 65
+        ]
+         if(patch-left-and-ahead angle pace != nobody) and ;je v smere vobec nieco (dlazdica)?
+         ((not any? turtles-on patch-left-and-ahead angle pace) or ;nikto z mnoziny vsetkych agentov nie je pred nim vo vzdialenosti
+           ((count turtles-on patch-left-and-ahead angle pace = 1) and;ak je na dlazdici len jeden agent, som to asi ja
+           (one-of turtles-on patch-left-and-ahead angle pace = self)) ;overim ci to teda nie som ja
+         )[
+           left angle
+           jump pace       ;poskocenie
+          print "go left"
+        print angle
+          ]
+      ]
+    ]
+
+     if (pxcor = goalx and pycor = goaly) [
+
+     ]
+
+
+  ]
+end
 
 to setup
   clear-all        ;global reset
   set building-x 28
   set building-y 15
+  set water-x 58
+  set water-y-min 14
+  set food-x 58
+  set food-y-max 15
+  set mud-x-max 36
+  set mud-y-min 18
 
+  setup-farm
   setup-people
   setup-pigs
-  setup-farm
 end
 
 to setup-farm
@@ -56,7 +120,7 @@ end
 
 
 to setup-water [x y]
-     if ((x > 58) and (x < 65) and (y > 1) and (y < 34))
+     if ((x > water-x) and (x < 65) and (y > water-y-min) and (y < 34))
      [
      set pcolor blue + 1
      ]
@@ -70,13 +134,13 @@ to setup-food [x y]
 end
 
 to setup-mud [x y]
-     if ((x > -2) and (x < 36) and (y > 20) and (y < 34))
+     if ((x > -2) and (x < mud-x-max) and (y > 20) and (y < 34))
     [
      set pcolor brown - 2
     ]
-    if ((x > 32) and (x < 36) and (y > 20) and (y < 34))
+    if ((x > 32) and (x < mud-x-max) and (y > 20) and (y < 34))
     or
-    (((x > -2) and (x < 36) and (y > 18) and (y < 22)))
+    (((x > -2) and (x < mud-x-max) and (y > mud-y-min) and (y < 22)))
     [
      set pcolor brown - 1
     ]
@@ -94,7 +158,7 @@ to setup-people
 end
 
 to setup-pigs
-  create-pigs 30
+  create-pigs 20
 
   ask pigs [
     set color pink
@@ -104,7 +168,62 @@ to setup-pigs
     set size 4
     set pace random-normal 1 0.2
     set move true
+
+    let number random 55;
+    ifelse number mod 2 = 0 [
+      set goalx water-x
+      set goaly water-y-min + (add-random-in-range water-y-min 32)
+      print "voda"
+
+    ] [
+      ifelse number mod 3 = 0 [
+        set goalx food-x
+        set goaly 0 + (add-random-in-range 0 food-y-max)
+        print "jedlo"
+
+      ][
+          set goalx (0 + (add-random-in-range 0 mud-x-max))
+          set goaly (mud-y-min + (add-random-in-range mud-y-min 32))
+        print "bahno"
+
+      ]
+    ]
+
   ]
+
+
+
+
+
+;      if pxcor myself < min-dist [
+;        set closest-x distance myself           ;set distance to closest this exit
+;        set closest-y self        ;set min-exit to this exit
+;      ]
+;    ]
+;
+;    set headx [doorx] of min-exit            ; headx = min-exit.getDoorx()
+;    set heady [doory] of min-exit
+end
+
+to-report random-boolean
+ let number random 10
+  let boolean number mod 2 = 0
+  report boolean
+end
+
+to-report add-random-in-range [min-range max-range]
+  let number random max-range
+  let modulo-number number mod max-range
+  print "range min"
+  print min-range
+   print "range max"
+  print max-range
+  if modulo-number + min-range > max-range [
+    print modulo-number
+    report modulo-number - min-range
+  ]
+  print modulo-number
+  report modulo-number
 end
 
 
@@ -113,8 +232,8 @@ end
 GRAPHICS-WINDOW
 210
 10
-1129
-482
+1128
+481
 -1
 -1
 14.0
@@ -145,6 +264,23 @@ BUTTON
 NIL
 setup
 NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+123
+153
+187
+187
+NIL
+go
+T
 1
 T
 OBSERVER
