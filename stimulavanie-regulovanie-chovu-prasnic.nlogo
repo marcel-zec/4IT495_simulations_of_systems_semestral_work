@@ -19,7 +19,14 @@ to setup-farm
     let x pxcor    ; x = Patches.thisPatchXcor
     let y pycor
 
-    ;fence
+    setup-fence x y
+    setup-building x y
+    setup-water x y
+    setup-mud x y
+  ]
+end
+
+to setup-fence [x y]
     if((x > -65) and (x < 1) and (y > -1) and (y < 1))
     or ((x > -65) and (x < 1) and (y > 31) and (y < 33))
     or ((x > -65) and (x < -63) and (y > -1) and (y < 33))
@@ -27,8 +34,9 @@ to setup-farm
     [
      set pcolor black + 1
     ]
+end
 
-    ;building
+to setup-building [x y]
     if ((x > -32) and (x < 0) and (y > 0) and (y < 16))
     [
      set pcolor brown + 3
@@ -45,15 +53,18 @@ to setup-farm
     [
      set pcolor black + 3
     ]
+end
 
-    ;water
+
+to setup-water [x y]
      if ((x > -64) and (x < -31) and (y > 0) and (y < 8))
      [
      set pcolor blue + 1
      ]
+end
 
-    ;mud
-    if ((x > -28) and (x < 0) and (y > 15) and (y < 32))
+to setup-mud [x y]
+     if ((x > -28) and (x < 0) and (y > 15) and (y < 32))
     [
      set pcolor brown
     ]
@@ -66,8 +77,9 @@ to setup-farm
     [
      set pcolor brown - 2
     ]
-  ]
 end
+
+
 
 to setup-people
   create-people 1
