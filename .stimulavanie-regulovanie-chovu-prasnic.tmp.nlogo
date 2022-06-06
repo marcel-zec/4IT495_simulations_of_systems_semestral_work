@@ -1,7 +1,7 @@
 ; CODE START ;
 extensions [array]
 
-globals [water mud building]
+globals [building-x building-y]
 
 
 ; agents
@@ -13,13 +13,15 @@ pigs-own [pace headx heady move]
 
 to setup
   clear-all        ;global reset
+  set building-x 28
+  set building-y 15
+
   setup-people
   setup-pigs
   setup-farm
 end
 
 to setup-farm
-  print water
   ask patches [
     set pcolor green - 3
     let x pxcor    ; x = Patches.thisPatchXcor
@@ -28,15 +30,17 @@ to setup-farm
     setup-building x y
     setup-water x y
     setup-mud x y
+    setup-food x y
   ]
 end
 
 to setup-building [x y]
-    if ((x > -1) and (x < 28) and (y > -1) and (y < 15))
+
+    if ((x > -1) and (x < building-x) and (y > -1) and (y < building-y))
     [
      set pcolor brown + 3
     ]
-    if ((x > -1) and (x < 28) and (y > 1) and (y < 13))
+    if ((x > -1) and (x < building-x) and (y > 1) and (y < 13))
     [
      set pcolor brown + 2
     ]
@@ -52,9 +56,16 @@ end
 
 
 to setup-water [x y]
-     if ((x > 58) and (x < 66) and (y > -2) and (y < 34))
+     if ((x > 58) and (x < 65) and (y > 1) and (y < 34))
      [
      set pcolor blue + 1
+     ]
+end
+
+to setup-food [x y]
+     if ((x > 58) and (x < 65) and (y > -1) and (y < 15))
+     [
+     set pcolor yellow + 2
      ]
 end
 
@@ -65,24 +76,18 @@ to setup-mud [x y]
     ]
     if ((x > 32) and (x < 36) and (y > 20) and (y < 34))
     or
-    (((x > -2) and (x < 36) and (y > 2) and (y < 24)))
+    (((x > -2) and (x < 36) and (y > 18) and (y < 22)))
     [
      set pcolor brown - 1
     ]
 end
-
-to-report on-water
-
-end
-
-
 
 to setup-people
   create-people 1
   ask people [
     set color blue
     setxy random-pxcor random-pycor
-    set size 2
+    set size 3
     set pace random-normal 1 0.2
     set move true
   ]
@@ -93,8 +98,10 @@ to setup-pigs
 
   ask pigs [
     set color pink
-    setxy random-pxcor random-pycor
-    set size 2
+    let x random-pxcor mod (building-x - 1)
+    let y random-pycor mod (building-y - 1)
+    setxy x y
+    set size 4
     set pace random-normal 1 0.2
     set move true
   ]
