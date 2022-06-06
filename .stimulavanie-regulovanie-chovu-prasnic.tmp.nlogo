@@ -9,7 +9,7 @@ breed [people person]
 people-own [pace headx heady move goalx goaly]
 
 breed [pigs pig]
-pigs-own [pace headx heady move goalx goaly]
+pigs-own [pace headx heady move goalx goaly standing reverse-move]
 
 to go
   make-step
@@ -18,55 +18,93 @@ end
 to make-step
   ask pigs[
 
+    ifelse reverse-move > 0 [
+      ifelse(reverse-move < 3)[
+        set reverse-move reverse-move + 1
+;        jump (-1 * pace)
+      ][
+        set reverse-move 0
+      ]
 
-    if can-move? pace [
-     facexy goalx goaly
-    ]
+    ][
 
-    ifelse(patch-ahead pace != nobody) and ;je v smere vobec nieco (dlazdica)?
+      ifelse can-move? pace [
+        if standing < 15 [
+          facexy goalx goaly
+        ]
+      ] [
+        set standing standing + 1
+      ]
+
+      ifelse(patch-ahead pace != nobody) and ;je v smere vobec nieco (dlazdica)?
       ((not any? turtles-on patch-ahead pace) or ;nikto z mnoziny vsetkych agentov nie je pred nim vo vzdialenosti
         ((count turtles-on patch-ahead pace = 1) and;ak je na dlazdici len jeden agent, som to asi ja
-        (one-of turtles-on patch-ahead pace = self)) ;overim ci to teda nie som ja
-      )[
+          (one-of turtles-on patch-ahead pace = self)) ;overim ci to teda nie som ja
+        )[
         jump pace       ;poskocenie
-    ] [        ;else
+      ] [        ;else
         let angle 45
-       if random-boolean [
-          set angle 65
-        ]
-      ifelse(patch-right-and-ahead angle pace != nobody) and ;je v smere vobec nieco (dlazdica)?
-      ((not any? turtles-on patch-right-and-ahead angle pace) or ;nikto z mnoziny vsetkych agentov nie je pred nim vo vzdialenosti
-        ((count turtles-on patch-right-and-ahead angle pace = 1) and;ak je na dlazdici len jeden agent, som to asi ja
-        (one-of turtles-on patch-right-and-ahead angle pace = self)) ;overim ci to teda nie som ja
-      )[
-         right angle
-        jump pace       ;poskocenie
-         print "go right"
-        print angle
-      ] [ ;else
-        set angle 45
         if random-boolean [
           set angle 65
         ]
-         if(patch-left-and-ahead angle pace != nobody) and ;je v smere vobec nieco (dlazdica)?
-         ((not any? turtles-on patch-left-and-ahead angle pace) or ;nikto z mnoziny vsetkych agentov nie je pred nim vo vzdialenosti
-           ((count turtles-on patch-left-and-ahead angle pace = 1) and;ak je na dlazdici len jeden agent, som to asi ja
-           (one-of turtles-on patch-left-and-ahead angle pace = self)) ;overim ci to teda nie som ja
-         )[
-           left angle
-           jump pace       ;poskocenie
-          print "go left"
-        print angle
+        ifelse(patch-right-and-ahead angle pace != nobody) and ;je v smere vobec nieco (dlazdica)?
+        ((not any? turtles-on patch-right-and-ahead angle pace) or ;nikto z mnoziny vsetkych agentov nie je pred nim vo vzdialenosti
+          ((count turtles-on patch-right-and-ahead angle pace = 1) and;ak je na dlazdici len jeden agent, som to asi ja
+            (one-of turtles-on patch-right-and-ahead angle pace = self)) ;overim ci to teda nie som ja
+          )[
+          right angle
+          jump pace       ;poskocenie
+        ] [ ;else
+          set angle 45
+          if random-boolean [
+            set angle 65
           ]
+          if(patch-left-and-ahead angle pace != nobody) and ;je v smere vobec nieco (dlazdica)?
+          ((not any? turtles-on patch-left-and-ahead angle pace) or ;nikto z mnoziny vsetkych agentov nie je pred nim vo vzdialenosti
+            ((count turtles-on patch-left-and-ahead angle pace = 1) and;ak je na dlazdici len jeden agent, som to asi ja
+              (one-of turtles-on patch-left-and-ahead angle pace = self)) ;overim ci to teda nie som ja
+            )[
+            left angle
+            jump pace       ;poskocenie
+          ]
+        ]
       ]
+
+
+    if standing > 50 [
+      set standing 0
+      set reverse-move reverse-move + 1
     ]
 
-     if (pxcor = goalx and pycor = goaly) [
+    let x round pxcor
+    let y round pycor
+    if (x < (goalx + 2)) and (x > (goalx - 2))
+      and
+      (y < (goaly + 2)) and (y > (goaly - 2))
+      [
 
-     ]
+        ifelse standing > 10 [
+          set standing 0
+          random-pig-goal who
+          print "change mind"
+        ][
+          set standing standing + 1
+        ]
+      ]
 
 
+
+    ask patch-here [
+      if count turtles-on neighbors >= 2 and random 10 < 5 [
+        ask myself [
+          set standing 0
+          set reverse-move reverse-move + 1
+        ]
+      ]
+    ]
   ]
+  ]
+
 end
 
 to setup
@@ -118,7 +156,6 @@ to setup-building [x y]
     ]
 end
 
-
 to setup-water [x y]
      if ((x > water-x) and (x < 65) and (y > water-y-min) and (y < 34))
      [
@@ -158,41 +195,20 @@ to setup-people
 end
 
 to setup-pigs
-  create-pigs 20
+  create-pigs 10
 
   ask pigs [
-    set color pink
+    set color pink - 1
     let x random-pxcor mod (building-x - 1)
     let y random-pycor mod (building-y - 1)
     setxy x y
     set size 4
     set pace random-normal 1 0.2
     set move true
-
-    let number random 55;
-    ifelse number mod 2 = 0 [
-      set goalx water-x
-      set goaly water-y-min + (add-random-in-range water-y-min 32)
-      print "voda"
-
-    ] [
-      ifelse number mod 3 = 0 [
-        set goalx food-x
-        set goaly 0 + (add-random-in-range 0 food-y-max)
-        print "jedlo"
-
-      ][
-          set goalx (0 + (add-random-in-range 0 mud-x-max))
-          set goaly (mud-y-min + (add-random-in-range mud-y-min 32))
-        print "bahno"
-
-      ]
-    ]
-
+    set standing 0
+    set shape "cow"
+    random-pig-goal who
   ]
-
-
-
 
 
 ;      if pxcor myself < min-dist [
@@ -205,6 +221,36 @@ to setup-pigs
 ;    set heady [doory] of min-exit
 end
 
+to random-pig-goal [id]
+  ask pig id [
+    let number random 55;
+    ifelse random-boolean [
+          set goalx (1 + (add-random-in-range 1 63))
+          set goaly (1 + (add-random-in-range 1 31))
+          print "random"
+        ][
+      ifelse number mod 2 = 0 [
+      set goalx water-x
+      set goaly water-y-min + (add-random-in-range (water-y-min + 1) 31)
+      print "voda"
+
+    ] [
+      ifelse number mod 3 = 0 [
+        set goalx food-x
+        set goaly 1 + (add-random-in-range 1 (food-y-max - 1))
+        print "jedlo"
+
+      ][
+        set goalx (1 + (add-random-in-range 1 (mud-x-max - 1)))
+          set goaly (mud-y-min + (add-random-in-range (mud-y-min + 1) 31))
+          print "bahno"
+        ]
+
+      ]
+    ]
+  ]
+end
+
 to-report random-boolean
  let number random 10
   let boolean number mod 2 = 0
@@ -214,15 +260,15 @@ end
 to-report add-random-in-range [min-range max-range]
   let number random max-range
   let modulo-number number mod max-range
-  print "range min"
-  print min-range
-   print "range max"
-  print max-range
+;  print "range min"
+;  print min-range
+;  print "range max"
+;  print max-range
   if modulo-number + min-range > max-range [
-    print modulo-number
+;    print modulo-number
     report modulo-number - min-range
   ]
-  print modulo-number
+;  print modulo-number
   report modulo-number
 end
 
