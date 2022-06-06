@@ -53,16 +53,16 @@ to setup-farm
      ]
 
     ;mud
-    if ((x > -28) and (x < 0) and (y > 15) and (y < 32))
+    if ((x > -24) and (x < 0) and (y > 15) and (y < 32))
     [
      set pcolor brown
     ]
-    if ((x > -24) and (x < 0) and (y > 15) and (y < 32))
+    if ((x > -22) and (x < -2) and
     [
      set pcolor brown - 1
     ]
 
-    if ((x > -19) and (x < 0) and (y > 15) and (y < 32))
+    if ((x > -19) and (x < -5) and (y > 20) and (y < 27))
     [
      set pcolor brown - 2
     ]
