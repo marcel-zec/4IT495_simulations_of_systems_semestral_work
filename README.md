@@ -35,7 +35,7 @@ Marcel Žec, zecm01
 
 MACÁK, PHD., Doc. MVDr. Vladimír, MVDr. Nela KYZEKOVÁ, Prof. MVDr. Peter REICHEL, CSC., MVDr. Miroslav HÚSKA, PHD., MVDr. Herbert SEIDEL, PHD., MVDr. Róbert LINK, PHD., MVDr. Jaroslav NOVOTNÝ, PHD. a MVDr. Katarína KOVAČOCYOVÁ, PHD. Indukcia ruje a ovulácie u prasničiek a prasníc. INFOVET: veterinársky odborný časopis [online]. Prešov: M&M vydavateľstvo [cit. 2022-05-04]. Dostupné z: https://infovet.sk/indukcia-ruje-a-ovulacie-u-prasniciek-a-prasnic/
 
-RESTENSKÝ A KOL., V. NÁRODNÉ POĽNOHOSPODÁRSKE A POTRAVINÁRSKE CENTRUM - VÝSKUMNÝ ÚSTAV ŽIVOČÍŠNEJ VÝROBY NITRA. Chov hospodárskych zvierat [online]. Nitra, 2015, s. 181 [cit. 2022-06-07]. ISBN 978-80-89417-41-1. Dostupné z: http://www.vuzv.sk/pdf/chov_hz.pdf
+RESTENSKÝ A KOL., V. NÁRODNÉ POĽNOHOSPODÁRSKE A POTRAVINÁRSKE CENTRUM - VÝSKUMNÝ ÚSTAV ŽIVOČÍŠNEJ VÝROBY NITRA. Chov hospodárskych zvierat [online]. Nitra, 2015, s. 155-228 [cit. 2022-06-07]. ISBN 978-80-89417-41-1. Dostupné z: http://www.vuzv.sk/pdf/chov_hz.pdf
 
 ### Poznatky zo zdroja vhodné pre simuláciu
 
