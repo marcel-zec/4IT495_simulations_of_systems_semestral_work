@@ -9,7 +9,7 @@ breed [people person]
 people-own [pace headx heady move goalx goaly]
 
 breed [pigs pig]
-pigs-own [pace headx heady move goalx goaly standing reverse-move]
+pigs-own [pace headx heady move goalx goaly standing reverse-move achieved]
 
 to go
   make-step
@@ -18,91 +18,113 @@ end
 to make-step
   ask pigs[
 
-    ifelse reverse-move > 0 [
-      ifelse(reverse-move < 3)[
-        set reverse-move reverse-move + 1
-;        jump (-1 * pace)
-      ][
-        set reverse-move 0
-      ]
-
-    ][
-
-      ifelse can-move? pace [
-        if standing < 15 [
-          facexy goalx goaly
-        ]
-      ] [
+    ifelse achieved [
+      ifelse standing < 10 [
         set standing standing + 1
-      ]
+      ] ;standing a while when goal spo achieved
+      [
+        set standing 0
+        random-pig-goal who
+        set achieved false
+      ] ;else
+    ] ;ifelse achieved
+    [ ;else
+      ifelse reverse-move > 0 [
+      ;reverse when blocked by other agents
+        ifelse(reverse-move < 3)[
+          set reverse-move reverse-move + 1
+          jump (-1 * pace)
+        ] ;ifelse  ifelse(reverse-move < 3)
+        [
+          set reverse-move  0
+        ] ;else
+      ] ;ifelse  reverse-move > 0
+      [ ;else
 
-      ifelse(patch-ahead pace != nobody) and ;je v smere vobec nieco (dlazdica)?
-      ((not any? turtles-on patch-ahead pace) or ;nikto z mnoziny vsetkych agentov nie je pred nim vo vzdialenosti
-        ((count turtles-on patch-ahead pace = 1) and;ak je na dlazdici len jeden agent, som to asi ja
-          (one-of turtles-on patch-ahead pace = self)) ;overim ci to teda nie som ja
+        facexy goalx goaly
+        let moved false;
+        ifelse(patch-ahead pace != nobody) and ;je v smere vobec nieco (dlazdica)?
+        ((not any? turtles-on patch-ahead pace) or ;nikto z mnoziny vsetkych agentov nie je pred nim vo vzdialenosti
+          ((count turtles-on patch-ahead pace = 1) and;ak je na dlazdici len jeden agent, som to asi ja
+            (one-of turtles-on patch-ahead pace = self)) ;overim ci to teda nie som ja
         )[
-        jump pace       ;poskocenie
-      ] [        ;else
-        let angle 45
-        if random-boolean [
-          set angle 65
-        ]
+          set moved true;
+          jump pace       ;poskocenie
+         ] [        ;else
+          let angle 45
+          if random-boolean [
+            set angle 65
+          ]
         ifelse(patch-right-and-ahead angle pace != nobody) and ;je v smere vobec nieco (dlazdica)?
         ((not any? turtles-on patch-right-and-ahead angle pace) or ;nikto z mnoziny vsetkych agentov nie je pred nim vo vzdialenosti
           ((count turtles-on patch-right-and-ahead angle pace = 1) and;ak je na dlazdici len jeden agent, som to asi ja
             (one-of turtles-on patch-right-and-ahead angle pace = self)) ;overim ci to teda nie som ja
           )[
-          right angle
-          jump pace       ;poskocenie
-        ] [ ;else
-          set angle 45
-          if random-boolean [
-            set angle 65
-          ]
+            set moved true;
+            right angle
+            jump pace       ;poskocenie
+          ] [ ;else
+            set angle 45
+            if random-boolean [
+              set angle 65
+            ]
           if(patch-left-and-ahead angle pace != nobody) and ;je v smere vobec nieco (dlazdica)?
           ((not any? turtles-on patch-left-and-ahead angle pace) or ;nikto z mnoziny vsetkych agentov nie je pred nim vo vzdialenosti
             ((count turtles-on patch-left-and-ahead angle pace = 1) and;ak je na dlazdici len jeden agent, som to asi ja
               (one-of turtles-on patch-left-and-ahead angle pace = self)) ;overim ci to teda nie som ja
             )[
-            left angle
-            jump pace       ;poskocenie
+              set moved true;
+              left angle
+              jump pace       ;poskocenie
+            ]
           ]
-        ]
       ]
 
+      if moved[
+        let x round pxcor
+        let y round pycor
+        if (x < (goalx + 3)) and (x > (goalx - 3))
+         and
+         (y < (goaly + 3)) and (y > (goaly - 3))
+         [
+            set achieved true
+            set standing standing + 1
+         ]
+      ]
 
-    if standing > 50 [
-      set standing 0
-      set reverse-move reverse-move + 1
     ]
-
-    let x round pxcor
-    let y round pycor
-    if (x < (goalx + 2)) and (x > (goalx - 2))
-      and
-      (y < (goaly + 2)) and (y > (goaly - 2))
-      [
-
-        ifelse standing > 10 [
-          set standing 0
-          random-pig-goal who
-          print "change mind"
-        ][
-          set standing standing + 1
-        ]
-      ]
+   ]
 
 
+;   [
+;
+;      ;face goal when can move, stand otherwise
+;;      if can-move? pace [
+;;
+;;      ]
+;
+;
+;
+;
+;
+;    if standing > 50 [
+;      set standing 0
+;      set reverse-move reverse-move + 1
+;    ]
+;
 
-    ask patch-here [
-      if count turtles-on neighbors >= 2 and random 10 < 5 [
-        ask myself [
-          set standing 0
-          set reverse-move reverse-move + 1
-        ]
-      ]
-    ]
-  ]
+;
+;
+;
+;    ask patch-here [
+;      if count turtles-on neighbors >= 2 and random 10 < 5 [
+;        ask myself [
+;          set standing 0
+;          set reverse-move reverse-move + 1
+;        ]
+;      ]
+;    ]
+;  ]
   ]
 
 end
@@ -195,7 +217,7 @@ to setup-people
 end
 
 to setup-pigs
-  create-pigs 10
+  create-pigs 20
 
   ask pigs [
     set color pink - 1
@@ -206,7 +228,7 @@ to setup-pigs
     set pace random-normal 1 0.2
     set move true
     set standing 0
-    set shape "cow"
+    set achieved false
     random-pig-goal who
   ]
 
