@@ -9,7 +9,7 @@ breed [people person]
 people-own [pace headx heady move goalx goaly]
 
 breed [pigs pig]
-pigs-own [pace headx heady move goalx goaly standing reverse-move achieved sleep]
+pigs-own [pace headx heady move goalx goaly standing reverse-move old-color achieved sleep age male]
 
 to go
   ;DAY/NIGHT has 600 ticks
@@ -250,8 +250,9 @@ end
 
 to setup-pigs
 
-   create-pigs CHILDREN [
+   create-pigs CHILDREN_MALES [
       set color pink
+      set old-color color
       let x random-pxcor mod (building-x - 1)
       let y random-pycor mod (building-y - 1)
       setxy x y
@@ -261,10 +262,29 @@ to setup-pigs
       set standing 0
       set achieved false
       set sleep false
+      set male true
       random-pig-goal who
     ]
-  create-pigs ADULTS [
-    set color pink - 1
+
+  create-pigs CHILDREN_FEMALES [
+      set color pink + 1
+      set old-color color
+      let x random-pxcor mod (building-x - 1)
+      let y random-pycor mod (building-y - 1)
+      setxy x y
+      set size 2
+      set pace random-normal 1 0.2
+      set move true
+      set standing 0
+      set achieved false
+      set sleep false
+      set male false
+      random-pig-goal who
+    ]
+
+  create-pigs MALES [
+    set color pink - 2
+    set old-color color
     let x random-pxcor mod (building-x - 1)
     let y random-pycor mod (building-y - 1)
     setxy x y
@@ -274,6 +294,23 @@ to setup-pigs
     set standing 0
     set achieved false
     set sleep false
+    set male true
+    random-pig-goal who
+  ]
+
+  create-pigs FEMALES [
+    set color pink - 1
+    set old-color color
+    let x random-pxcor mod (building-x - 1)
+    let y random-pycor mod (building-y - 1)
+    setxy x y
+    set size 4
+    set pace random-normal 1 0.2
+    set move true
+    set standing 0
+    set achieved false
+    set sleep false
+    set male false
     random-pig-goal who
   ]
 
@@ -310,9 +347,19 @@ end
 to change-pig-color-in-building [id]
   ask pig id [
     ifelse (pxcor <= (building-x - 1)) and (pycor <= (building-y - 1))[
-      ifelse NIGHT [set color pink - 1][set color pink - 4]
+      ifelse NIGHT [
+          set color old-color
+      ]
+        [
+          set color pink - 4
+        ]
+      ]
+    [
+      ifelse NIGHT [
+       set color pink - 4
     ][
-      ifelse NIGHT [set color pink - 4][set color pink - 1]
+        set color old-color
+      ]
     ]
   ]
 end
@@ -422,10 +469,10 @@ ticks
 30.0
 
 BUTTON
-144
-234
-207
-267
+145
+345
+208
+378
 NIL
 setup
 NIL
@@ -456,30 +503,15 @@ NIL
 1
 
 SLIDER
-35
-117
-207
-150
-ADULTS
-ADULTS
-1
-30
-15.0
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
 34
-156
+194
 206
-189
-CHILDREN
-CHILDREN
-1
-20
-7.0
+227
+CHILDREN_MALES
+CHILDREN_MALES
+0
+4
+1.0
 1
 1
 NIL
@@ -506,6 +538,51 @@ NIGHT
 17
 1
 11
+
+SLIDER
+34
+157
+206
+190
+FEMALES
+FEMALES
+0
+10
+1.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+34
+120
+206
+153
+MALES
+MALES
+0
+10
+1.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+34
+233
+206
+266
+CHILDREN_FEMALES
+CHILDREN_FEMALES
+0
+4
+1.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
