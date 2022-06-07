@@ -67,11 +67,11 @@ v ich správaní. Na konci diestru sa začína regresia žltých teliesok a nast
 proestrus (pokiaľ nie je prasnica prasná).
 
 ##### Predpôrodné obdobie a pôrod [1]
-Dĺžka prasnosti je pri prasniciach 115 ± 5 dní. 
+<font color="blue">Dĺžka prasnosti je pri prasniciach 115 ± 5 dní.</font>
 
 ##### Prirodzené pripúšťanie [1]
-- **oplodnenie po I. inseminácii 70 %** a viac
-- **priemerná veľkosť vrhu 12**  a viac
+- ***oplodnenie po I. inseminácii 70 %*** a viac
+- ***priemerná veľkosť vrhu 12***  a viac
 
 ##### Biotechnické metódy využívané v reprodukcii ošípaných [1]
 Po odstave ciciakov od prasníc sa ruja objaví do 6 dní v priemere na 3.-9. deň. Pokiaľ
