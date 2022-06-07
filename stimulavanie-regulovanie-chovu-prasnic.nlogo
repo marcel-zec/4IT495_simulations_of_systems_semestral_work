@@ -1,7 +1,7 @@
 ; CODE START ;
 extensions [array]
 
-globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min COUNTER NIGHT]
+globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min COUNTER NIGHT CHILDREN_MALES CHILDREN_FEMALES MALES FEMALES DAY-TICKS DEATHS]
 
 
 ; agents
@@ -9,16 +9,22 @@ breed [people person]
 people-own [pace headx heady move goalx goaly]
 
 breed [pigs pig]
-pigs-own [pace headx heady move goalx goaly standing reverse-move old-color achieved sleep age male]
+pigs-own [pace headx heady move goalx goaly standing reverse-move old-color achieved sleep age male death]
 
 to go
-  ;DAY/NIGHT has 600 ticks
-  if COUNTER mod 600 = 0 [
+  ;DAY/NIGHT has 500 ticks
+  if COUNTER mod DAY-TICKS = 0 [
     set NIGHT not NIGHT
     setup-farm
     if NIGHT = false [
       wake-up-pigs
     ]
+    set-pigs-older
+    pigs-death
+  ]
+
+  if COUNTER mod 182500 = 0 [
+    pigs-death
   ]
 
   if random-boolean and random-boolean [
@@ -147,7 +153,9 @@ end
 to setup
   clear-all        ;global reset
   set COUNTER 0
-  SET NIGHT true
+  set DEATHS 0
+  set NIGHT true
+  set DAY-TICKS 500
   set building-x 28
   set building-y 15
   set water-x 58
@@ -250,7 +258,8 @@ end
 
 to setup-pigs
 
-   create-pigs CHILDREN_MALES [
+   set CHILDREN_MALES INIT_CHILDREN_MALES
+   create-pigs INIT_CHILDREN_MALES [
       set color pink
       set old-color color
       let x random-pxcor mod (building-x - 1)
@@ -263,10 +272,13 @@ to setup-pigs
       set achieved false
       set sleep false
       set male true
+      set death false
+      set age (20 + (add-random-in-range 20 50))
       random-pig-goal who
     ]
 
-  create-pigs CHILDREN_FEMALES [
+  set CHILDREN_FEMALES INIT_CHILDREN_FEMALES
+  create-pigs INIT_CHILDREN_FEMALES [
       set color pink + 1
       set old-color color
       let x random-pxcor mod (building-x - 1)
@@ -279,10 +291,13 @@ to setup-pigs
       set achieved false
       set sleep false
       set male false
+      set death false
+      set age (20 + (add-random-in-range 20 50))
       random-pig-goal who
     ]
 
-  create-pigs MALES [
+  set MALES INIT_MALES
+  create-pigs INIT_MALES [
     set color pink - 2
     set old-color color
     let x random-pxcor mod (building-x - 1)
@@ -295,10 +310,13 @@ to setup-pigs
     set achieved false
     set sleep false
     set male true
+    set death false
+    set age (1460 + (add-random-in-range 1460 2920))
     random-pig-goal who
   ]
 
-  create-pigs FEMALES [
+  set FEMALES INIT_FEMALES
+  create-pigs INIT_FEMALES [
     set color pink - 1
     set old-color color
     let x random-pxcor mod (building-x - 1)
@@ -311,6 +329,8 @@ to setup-pigs
     set achieved false
     set sleep false
     set male false
+    set death false
+    set age (1460 + (add-random-in-range 1460 2920))
     random-pig-goal who
   ]
 
@@ -364,12 +384,51 @@ to change-pig-color-in-building [id]
   ]
 end
 
+to pigs-death
+  ask pigs [
+    if death [
+      ifelse age >= 220 [
+        ifelse male = true [
+          set MALES MALES - 1
+        ][
+          set FEMALES FEMALES - 1
+        ]
+      ][
+        ifelse male = true [
+          set CHILDREN_MALES CHILDREN_MALES - 1
+        ][
+          set CHILDREN_FEMALES CHILDREN_FEMALES - 1
+        ]
+      ]
+     set DEATHS DEATHS + 1
+     die
+    ]
+
+    if ( age / 365 ) > 15 [
+      ifelse ( age / 365 ) > 20[
+      if random 25 = 1 [
+        set death true
+      ]
+      ][
+        if random 80 = 1 [
+          set death true
+        ]
+      ]
+    ]
+  ]
+end
+
 to wake-up-pigs
   ask pigs [
      set sleep false
   ]
 end
 
+to set-pigs-older
+  ask pigs [
+     set age age + 1
+  ]
+end
 
 ;Set goalx and goaly attributes to 'water' destiantion for pig with given ID.
 ;[id] - pig who attribute
@@ -469,10 +528,10 @@ ticks
 30.0
 
 BUTTON
-145
-345
-208
-378
+143
+269
+206
+302
 NIL
 setup
 NIL
@@ -507,8 +566,8 @@ SLIDER
 194
 206
 227
-CHILDREN_MALES
-CHILDREN_MALES
+INIT_CHILDREN_MALES
+INIT_CHILDREN_MALES
 0
 4
 1.0
@@ -544,8 +603,8 @@ SLIDER
 157
 206
 190
-FEMALES
-FEMALES
+INIT_FEMALES
+INIT_FEMALES
 0
 10
 1.0
@@ -559,8 +618,8 @@ SLIDER
 120
 206
 153
-MALES
-MALES
+INIT_MALES
+INIT_MALES
 0
 10
 1.0
@@ -570,12 +629,12 @@ NIL
 HORIZONTAL
 
 SLIDER
-34
-233
-206
-266
-CHILDREN_FEMALES
-CHILDREN_FEMALES
+25
+232
+207
+265
+INIT_CHILDREN_FEMALES
+INIT_CHILDREN_FEMALES
 0
 4
 1.0
@@ -583,6 +642,50 @@ CHILDREN_FEMALES
 1
 NIL
 HORIZONTAL
+
+MONITOR
+27
+311
+84
+356
+NIL
+MALES
+17
+1
+11
+
+MONITOR
+89
+311
+203
+356
+NIL
+CHILDREN_MALES
+17
+1
+11
+
+MONITOR
+5
+361
+69
+406
+NIL
+FEMALES
+17
+1
+11
+
+MONITOR
+73
+361
+201
+406
+NIL
+CHILDREN_FEMALES
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
