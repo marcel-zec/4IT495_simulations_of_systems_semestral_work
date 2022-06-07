@@ -34,3 +34,17 @@ Marcel Žec, zecm01
 ### Zdroje
 
 MACÁK, PHD., Doc. MVDr. Vladimír, MVDr. Nela KYZEKOVÁ, Prof. MVDr. Peter REICHEL, CSC., MVDr. Miroslav HÚSKA, PHD., MVDr. Herbert SEIDEL, PHD., MVDr. Róbert LINK, PHD., MVDr. Jaroslav NOVOTNÝ, PHD. a MVDr. Katarína KOVAČOCYOVÁ, PHD. Indukcia ruje a ovulácie u prasničiek a prasníc. INFOVET: veterinársky odborný časopis [online]. Prešov: M&M vydavateľstvo [cit. 2022-05-04]. Dostupné z: https://infovet.sk/indukcia-ruje-a-ovulacie-u-prasniciek-a-prasnic/
+
+### Poznatky zo zdroja vhodné pre simuláciu
+
+##### Stimulácii „nástupu“ puberty u prepubertálnych prasničiek
+- denný kontakt prasničiek vo veku 160 – 180 dní s kancom, minimálne po dobu 15. minút, vyvoláva ruju u 70 – 80 % zvierat do 28 dní
+- prasničky sa nepripúšťajú hneď počas prvej ruje, ale až na druhú alebo tretiu 
+- odmienkou úspešnej indukcie puberty u prasničiek je, že na stimuláciu sa používa kanec starší ako 11 mesiacov
+
+##### Množstvo prasničiek
+- Optimalizácia veľkosti skupín prasničiek je dôležitá, lebo je preukázané, že prasničky chované v malých skupinách (3 ks) vykazujú neskorší nástup puberty a ich prejavy ruje sú menej výrazné ako u chovaných po 10 ks
+- Viacpočetné skupiny prasníc, najmä keď sú ustajnené na malej ploche kotercov, zas zvyšujú riziko pôsobenia stresov zo vzájomného napádania sa, čo negatívne ovplyvní nástup a priebeh ruje u prasníc.
+
+##### Stimulácii „nástupu“ puberty u prepubertálnych prasničiek
+- resun zvierat z farmy na farmu indukuje ruju u prasničiek do jedného týždňa
