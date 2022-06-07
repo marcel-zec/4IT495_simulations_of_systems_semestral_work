@@ -83,6 +83,7 @@ to make-step
       if moved[
         let x round pxcor
         let y round pycor
+        ;achieved goal destination
         if (x < (goalx + 3)) and (x > (goalx - 3))
          and
          (y < (goaly + 3)) and (y > (goaly - 3))
@@ -247,32 +248,58 @@ to random-pig-goal [id]
   ask pig id [
     let number random 55;
     ifelse random-boolean [
-          set goalx (1 + (add-random-in-range 1 63))
-          set goaly (1 + (add-random-in-range 1 31))
-          print "random"
-        ][
+          pig-goal-random who
+    ][
       ifelse number mod 2 = 0 [
-      set goalx water-x
-      set goaly water-y-min + (add-random-in-range (water-y-min + 1) 31)
-      print "voda"
-
-    ] [
-      ifelse number mod 3 = 0 [
-        set goalx food-x
-        set goaly 1 + (add-random-in-range 1 (food-y-max - 1))
-        print "jedlo"
-
-      ][
-        set goalx (1 + (add-random-in-range 1 (mud-x-max - 1)))
-          set goaly (mud-y-min + (add-random-in-range (mud-y-min + 1) 31))
-          print "bahno"
+        pig-goal-mud who
+      ] [
+        ifelse number mod 3 = 0 [
+          pig-goal-food who
+        ][
+          pig-goal-water who
         ]
-
       ]
     ]
   ]
 end
 
+;Set goalx and goaly attributes to 'water' destiantion for pig with given ID.
+;[id] - pig who attribute
+to pig-goal-water [id]
+  ask pig id [
+    set goalx water-x
+    set goaly water-y-min + (add-random-in-range (water-y-min + 1) 31)
+  ]
+end
+
+;Set goalx and goaly attributes to 'food' destiantion for pig with given ID.
+;[id] - pig who attribute
+to pig-goal-food [id]
+  ask pig id [
+     set goalx food-x
+     set goaly 1 + (add-random-in-range 1 (food-y-max - 1))
+  ]
+end
+
+;Set goalx and goaly attributes to 'mud' destiantion for pig with given ID.
+;[id] - pig who attribute
+to pig-goal-mud [id]
+  ask pig id [
+     set goalx (1 + (add-random-in-range 1 (mud-x-max - 1)))
+     set goaly (mud-y-min + (add-random-in-range (mud-y-min + 1) 31))
+  ]
+end
+
+;Set goalx and goaly attributes to 'random' destiantion for pig with given ID.
+;[id] - pig who attribute
+to pig-goal-random [id]
+  ask pig id [
+     set goalx (1 + (add-random-in-range 1 63))
+     set goaly (1 + (add-random-in-range 1 31))
+  ]
+end
+
+;Get random boolean.
 to-report random-boolean
  let number random 10
   let boolean number mod 2 = 0
