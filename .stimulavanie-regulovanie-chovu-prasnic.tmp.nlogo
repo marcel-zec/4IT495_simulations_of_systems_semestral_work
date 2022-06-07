@@ -12,6 +12,9 @@ breed [pigs pig]
 pigs-own [pace headx heady move goalx goaly standing reverse-move achieved]
 
 to go
+  if random-boolean a[
+    animate-water
+  ]
   make-step
 end
 
@@ -160,6 +163,14 @@ to setup-farm
   ]
 end
 
+to animate-water
+  ask patches [
+    let x pxcor
+    let y pycor
+    setup-water x y
+  ]
+end
+
 to setup-building [x y]
 
     if ((x > -1) and (x < building-x) and (y > -1) and (y < building-y))
@@ -181,17 +192,24 @@ to setup-building [x y]
 end
 
 to setup-water [x y]
-     if ((x > water-x) and (x < 65) and (y > water-y-min) and (y < 34))
-     [
+  if ((x > water-x) and (x < 65) and (y > water-y-min) and (y < 34))[
+     ifelse random-boolean [
      set pcolor blue + 1
+      ][
+      set pcolor blue + 2
      ]
+  ]
 end
 
 to setup-food [x y]
-     if ((x > 58) and (x < 65) and (y > -1) and (y < 15))
-     [
+  if ((x > 58) and (x < 65) and (y > -1) and (y < 15))
+  [
+    ifelse random-boolean [
      set pcolor yellow + 2
-     ]
+    ][
+       set pcolor yellow + 3
+    ]
+  ]
 end
 
 to setup-mud [x y]
@@ -266,7 +284,7 @@ end
 
 to change-pig-color-in-building [id]
   ask pig id [
-    ifelse (pxcor < (building-x)) and (pycor <= (building-y))[
+    ifelse (pxcor <= (building-x - 1)) and (pycor <= (building-y - 1))[
       set color pink - 4
     ][
       set color pink - 1
