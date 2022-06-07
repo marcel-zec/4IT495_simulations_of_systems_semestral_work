@@ -1,7 +1,7 @@
 ; CODE START ;
 extensions [array]
 
-globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min]
+globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min COUNTER NIGHT]
 
 
 ; agents
@@ -9,12 +9,20 @@ breed [people person]
 people-own [pace headx heady move goalx goaly]
 
 breed [pigs pig]
-pigs-own [pace headx heady move goalx goaly standing reverse-move achieved]
+pigs-own [pace headx heady move goalx goaly standing reverse-move achieved sleep]
 
 to go
-  if random-boolean a[
+  ;DAY/NIGHT has 600 ticks
+  if COUNTER mod 600 = 0 [
+    set NIGHT not NIGHT
+    setup-farm
+
+  ]
+
+  if random-boolean and random-boolean [
     animate-water
   ]
+  set COUNTER COUNTER + 1
   make-step
 end
 
@@ -22,13 +30,19 @@ to make-step
   ask pigs[
     change-pig-color-in-building who
 
+    if sleep = false [
+
     ifelse achieved [
       ifelse standing < 10 [
         set standing standing + 1
       ] ;standing a while when goal spo achieved
       [
         set standing 0
-        random-pig-goal who
+        ifelse NIGHT [
+          pig-goal-building who
+        ] [
+          random-pig-goal who
+        ]
         set achieved false
       ] ;else
     ] ;ifelse achieved
@@ -44,7 +58,6 @@ to make-step
         ] ;else
       ] ;ifelse  reverse-move > 0
       [ ;else
-
         facexy goalx goaly
         let moved false;
         ifelse(patch-ahead pace != nobody) and ;je v smere vobec nieco (dlazdica)?
@@ -94,33 +107,28 @@ to make-step
          [
             set achieved true
             set standing standing + 1
-         ]
-      ]
 
-    ]
-   ]
+            ;inside building at night
+            if (pxcor <= (building-x - 1)) and (pycor <= (building-y - 1)) and NIGHT [
+              set sleep true
+            ]
+         ]
+      ] ;if moved
+
+    ] ;else reverse-move > 0
+   ] ;else achieved
+
+ ] ;if sleep = false
 
 
 ;   [
-;
 ;      ;face goal when can move, stand otherwise
 ;;      if can-move? pace [
-;;
 ;;      ]
-;
-;
-;
-;
-;
 ;    if standing > 50 [
 ;      set standing 0
 ;      set reverse-move reverse-move + 1
 ;    ]
-;
-
-;
-;
-;
 ;    ask patch-here [
 ;      if count turtles-on neighbors >= 2 and random 10 < 5 [
 ;        ask myself [
@@ -136,6 +144,8 @@ end
 
 to setup
   clear-all        ;global reset
+  set COUNTER 0
+  SET NIGHT true
   set building-x 28
   set building-y 15
   set water-x 58
@@ -146,13 +156,13 @@ to setup
   set mud-y-min 18
 
   setup-farm
-  setup-people
+;  setup-people
   setup-pigs
 end
 
 to setup-farm
   ask patches [
-    set pcolor green - 3
+    ifelse NIGHT [set pcolor green - 4][set pcolor green - 3]
     let x pxcor    ; x = Patches.thisPatchXcor
     let y pycor
 
@@ -194,9 +204,9 @@ end
 to setup-water [x y]
   if ((x > water-x) and (x < 65) and (y > water-y-min) and (y < 34))[
      ifelse random-boolean [
-     set pcolor blue + 1
-      ][
-      set pcolor blue + 2
+      ifelse NIGHT [set pcolor blue - 1][set pcolor blue + 1]
+     ][
+      ifelse NIGHT [set pcolor blue - 2][set pcolor blue + 2]
      ]
   ]
 end
@@ -205,9 +215,9 @@ to setup-food [x y]
   if ((x > 58) and (x < 65) and (y > -1) and (y < 15))
   [
     ifelse random-boolean [
-     set pcolor yellow + 2
+       ifelse NIGHT [set pcolor yellow - 2][set pcolor yellow + 2]
     ][
-       set pcolor yellow + 3
+       ifelse NIGHT [set pcolor yellow - 3][set pcolor yellow + 3]
     ]
   ]
 end
@@ -215,13 +225,13 @@ end
 to setup-mud [x y]
      if ((x > -2) and (x < mud-x-max) and (y > 20) and (y < 34))
     [
-     set pcolor brown - 2
+     ifelse NIGHT [set pcolor brown - 4][set pcolor brown - 2]
     ]
     if ((x > 32) and (x < mud-x-max) and (y > 20) and (y < 34))
     or
     (((x > -2) and (x < mud-x-max) and (y > mud-y-min) and (y < 22)))
     [
-     set pcolor brown - 1
+     ifelse NIGHT [set pcolor brown - 3][set pcolor brown - 1]
     ]
 end
 
@@ -237,9 +247,21 @@ to setup-people
 end
 
 to setup-pigs
-  create-pigs 20
 
-  ask pigs [
+   create-pigs CHILDREN [
+      set color pink
+      let x random-pxcor mod (building-x - 1)
+      let y random-pycor mod (building-y - 1)
+      setxy x y
+      set size 2
+      set pace random-normal 1 0.2
+      set move true
+      set standing 0
+      set achieved false
+      set sleep false
+      random-pig-goal who
+    ]
+  create-pigs ADULTS [
     set color pink - 1
     let x random-pxcor mod (building-x - 1)
     let y random-pycor mod (building-y - 1)
@@ -249,6 +271,7 @@ to setup-pigs
     set move true
     set standing 0
     set achieved false
+    set sleep false
     random-pig-goal who
   ]
 
@@ -285,10 +308,16 @@ end
 to change-pig-color-in-building [id]
   ask pig id [
     ifelse (pxcor <= (building-x - 1)) and (pycor <= (building-y - 1))[
-      set color pink - 4
+      ifelse NIGHT [set color pink - 1][set color pink - 4]
     ][
-      set color pink - 1
+      ifelse NIGHT [set color pink - 4][set color pink - 1]
     ]
+  ]
+end
+
+to wake-up-pigs
+  ask pigs [
+     set sleep true
   ]
 end
 
@@ -326,6 +355,15 @@ to pig-goal-random [id]
   ask pig id [
      set goalx (1 + (add-random-in-range 1 63))
      set goaly (1 + (add-random-in-range 1 31))
+  ]
+end
+
+;Set goalx and goaly attributes to 'building' destiantion for pig with given ID.
+;[id] - pig who attribute
+to pig-goal-building [id]
+  ask pig id [
+     set goalx (0 + (add-random-in-range 1 (building-x - 1)))
+     set goaly (0 + (add-random-in-range 1 (building-y - 1)))
   ]
 end
 
@@ -382,10 +420,10 @@ ticks
 30.0
 
 BUTTON
-92
-70
-155
-103
+144
+234
+207
+267
 NIL
 setup
 NIL
@@ -399,10 +437,10 @@ NIL
 1
 
 BUTTON
-123
-153
-187
-187
+142
+443
+206
+477
 NIL
 go
 T
@@ -414,6 +452,58 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+35
+117
+207
+150
+ADULTS
+ADULTS
+1
+30
+15.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+34
+156
+206
+189
+CHILDREN
+CHILDREN
+1
+20
+7.0
+1
+1
+NIL
+HORIZONTAL
+
+MONITOR
+40
+47
+109
+92
+NIL
+COUNTER
+0
+1
+11
+
+MONITOR
+148
+47
+205
+92
+NIL
+NIGHT
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
