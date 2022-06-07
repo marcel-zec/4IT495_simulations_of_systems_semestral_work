@@ -17,6 +17,7 @@ end
 
 to make-step
   ask pigs[
+    change-pig-color-in-building who
 
     ifelse achieved [
       ifelse standing < 10 [
@@ -262,6 +263,17 @@ to random-pig-goal [id]
     ]
   ]
 end
+
+to change-pig-color-in-building [id]
+  ask pig id [
+    ifelse (pxcor <= (building-x - 1)) and (pycor <= (building-y - 1))[
+      set color pink - 4
+    ][
+      set color pink - 1
+    ]
+  ]
+end
+
 
 ;Set goalx and goaly attributes to 'water' destiantion for pig with given ID.
 ;[id] - pig who attribute
