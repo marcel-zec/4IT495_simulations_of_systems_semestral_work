@@ -156,7 +156,6 @@ to setup
   set mud-y-min 18
 
   setup-farm
-;  setup-people
   setup-pigs
 end
 
@@ -323,16 +322,6 @@ to setup-pigs
     set age (1460 + (add-random-in-range 1460 2920))
     random-pig-goal who
   ]
-
-
-;      if pxcor myself < min-dist [
-;        set closest-x distance myself           ;set distance to closest this exit
-;        set closest-y self        ;set min-exit to this exit
-;      ]
-;    ]
-;
-;    set headx [doorx] of min-exit            ; headx = min-exit.getDoorx()
-;    set heady [doory] of min-exit
 end
 
 to random-pig-goal [id]
@@ -560,7 +549,7 @@ INIT_CHILDREN_MALES
 INIT_CHILDREN_MALES
 0
 4
-1.0
+0.0
 1
 1
 NIL
@@ -627,7 +616,7 @@ INIT_CHILDREN_FEMALES
 INIT_CHILDREN_FEMALES
 0
 4
-1.0
+0.0
 1
 1
 NIL
