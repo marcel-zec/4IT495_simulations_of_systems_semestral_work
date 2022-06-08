@@ -9,7 +9,17 @@ breed [people person]
 people-own [pace headx heady move goalx goaly]
 
 breed [pigs pig]
-pigs-own [pace headx heady move goalx goaly standing reverse-move old-color achieved sleep age male death]
+pigs-own [pace
+  headx heady
+  move reverse-move standing sleep
+  goalx goaly achieved
+  age male
+  death
+  old-color
+  pregnancy pregnancy-probability pregnancy-duration
+  estrus estrus-cycle
+  mother
+]
 
 to go
   ;DAY/NIGHT has 500 ticks
@@ -23,7 +33,7 @@ to go
     pigs-death
   ]
 
-  if COUNTER mod 182500 = 0 [
+  if COUNTER mod 90000 = 0 [
     pigs-death
   ]
 
@@ -126,28 +136,8 @@ to make-step
     ] ;else reverse-move > 0
    ] ;else achieved
 
- ] ;if sleep = false
-
-
-;   [
-;      ;face goal when can move, stand otherwise
-;;      if can-move? pace [
-;;      ]
-;    if standing > 50 [
-;      set standing 0
-;      set reverse-move reverse-move + 1
-;    ]
-;    ask patch-here [
-;      if count turtles-on neighbors >= 2 and random 10 < 5 [
-;        ask myself [
-;          set standing 0
-;          set reverse-move reverse-move + 1
-;        ]
-;      ]
-;    ]
-;  ]
-  ]
-
+  ] ;if sleep = false
+ ]
 end
 
 to setup
@@ -607,7 +597,7 @@ INIT_FEMALES
 INIT_FEMALES
 0
 10
-1.0
+8.0
 1
 1
 NIL
@@ -622,7 +612,7 @@ INIT_MALES
 INIT_MALES
 0
 10
-1.0
+2.0
 1
 1
 NIL
@@ -683,6 +673,17 @@ MONITOR
 406
 NIL
 CHILDREN_FEMALES
+17
+1
+11
+
+MONITOR
+13
+412
+71
+457
+NIL
+DEATHS
 17
 1
 11
