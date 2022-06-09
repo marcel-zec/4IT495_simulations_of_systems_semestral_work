@@ -47,6 +47,7 @@ to go
   if COUNTER mod (DAY-TICKS + (DAY-TICKS / 2)) = 0 [
     set-pigs-pregnant
     get-pigs-childbirth
+    sell-pigs
   ]
 
   ;EVERY MONTH
@@ -160,17 +161,112 @@ to make-step
 end
 
 to sell-pigs
-;  if MALES >= 2 [
-;    let one -1
-;    set one ([who] of (max-one-of pigs with [male = true] [age]))
-;    if one != -1 [
-;      ask pig one [
-;      die
-;    ]
-;    set SOLD_MALES SOLD_MALES + 1
-;    ]
-;
-;  ]
+  let sell-children-males false
+  if CHILDREN_MALES > 10 and CHILDREN_FEMALES > 10 and count pigs with [pregnant = true] >= 1[
+    set sell-children-males true
+  ]
+
+  if sell-children-males = true [
+    let potencional count pigs with [male = true and maturity = false and age >= sexual-puberty]
+    while [potencional > 0 and potencional <= 4] [
+      sell-young-male-in-puberty-pig
+      set potencional count pigs with [male = true and maturity = false and age >= sexual-puberty]
+    ]
+  ]
+
+  set sell-children-males false
+  if (CHILDREN_MALES + CHILDREN_FEMALES) > 20 and CHILDREN_MALES > (CHILDREN_FEMALES / 2) and count pigs with [pregnant = true] >= 1[
+    set sell-children-males true
+  ]
+
+  if sell-children-males = true [
+    let potencional count pigs with [male = true and maturity = false]
+    while [potencional > 2] [
+      sell-young-male-pig
+      set potencional count pigs with [male = true and maturity = false]
+    ]
+  ]
+
+  if FEMALES > 10 and count pigs with [pregnant = true] >= 5 [
+    let potencional count pigs with [male = false and pregnant = false and maturity = true]
+    while [potencional > 0] [
+      sell-female-pig
+      set potencional count pigs with [male = false and pregnant = false and maturity = true]
+    ]
+  ]
+
+
+end
+
+to sell-young-male-in-puberty-pig
+      let min-age 999999999999999
+      let id -1
+      ask pigs with [male = true and maturity = false and age >= sexual-puberty] [
+        if age < min-age [
+          set min-age age
+          set id who
+        ]
+      ]
+      ask pig id [
+        set CHILDREN_MALES CHILDREN_MALES - 1
+        set SOLD_CHILDREN_MALES SOLD_CHILDREN_MALES + 1
+        die
+      ]
+end
+
+to sell-young-male-pig
+      let min-age 999999999999999
+      let id -1
+      ask pigs with [male = true and maturity = false] [
+        if age < min-age [
+          set min-age age
+          set id who
+        ]
+      ]
+      ask pig id [
+        set CHILDREN_MALES CHILDREN_MALES - 1
+        set SOLD_CHILDREN_MALES SOLD_CHILDREN_MALES + 1
+        die
+      ]
+end
+
+
+to sell-female-pig
+      let max-age -1
+      let id -1
+      ask pigs with [male = false and pregnant = false and maturity = true] [
+        if age > max-age [
+          set max-age age
+          set id who
+        ]
+      ]
+      ask pig id [
+        set FEMALES FEMALES - 1
+        set SOLD_FEMALES SOLD_FEMALES + 1
+        die
+      ]
+end
+
+
+to sell-male-pig
+  let max-age  0
+      let id -1
+      ask pigs [
+        if age > max-age [
+          set max-age age
+          set id who
+        ]
+      ]
+      ask pig id [
+        ifelse maturity = true [
+          set MALES MALES - 1
+          set SOLD_MALES SOLD_MALES + 1
+        ][
+          set CHILDREN_MALES CHILDREN_MALES - 1
+          set SOLD_CHILDREN_MALES SOLD_CHILDREN_MALES + 1
+        ]
+        die
+      ]
 end
 
 to crush-pigs
@@ -449,12 +545,21 @@ to random-pig-goal [id]
       ifelse age < sexual-puberty and mother > -1 and random-boolean = true [
         let x 0
         let y 0
-        ask pig mother [
-          set x goalx
-          set y goaly
+        ifelse any? turtles with [who = mother][
+          ;TODO
+          ;TODO
+          ;TODO - remove reference to mother when mothers died or sold
+          ;TODO
+          ;TODO
+          ask pig mother [
+            set x goalx
+            set y goaly
+          ]
+          set goalx x
+          set goaly y
+        ][
+          pig-goal-random who
         ]
-        set goalx x
-        set goaly y
       ][
         let number random 55;
         ifelse random-boolean [
@@ -930,7 +1035,7 @@ INIT_FEMALES
 INIT_FEMALES
 0
 10
-3.0
+2.0
 1
 1
 NIL
