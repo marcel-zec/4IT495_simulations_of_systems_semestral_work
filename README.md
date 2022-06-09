@@ -70,6 +70,11 @@ proestrus (pokiaľ nie je prasnica prasná).
 Dĺžka prasnosti je pri prasniciach ***115 ± 5 dní***.
 
 ##### Prirodzené pripúšťanie [1]
+- V bežných chovoch sa kance obmieňajú po 16-24 mesiacoch
+- Pri využívaní prirodzenej plemenitby je potrebné počítať na jedného kanca v priemere 20-25 prasníc
+- Dospelý kanec sa môže využívať na ***tri skoky týždenne***
+- pri mladých kančekoch sú to ***1-2 skoky týždenne***.
+- Prestávky medzi skokmi by ***mali trvať tri dni***, maximálne 6 dní.
 - oplodnenie po I. inseminácii ***70 %*** a viac
 - priemerná veľkosť vrhu ***12***  a viac
 
