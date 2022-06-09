@@ -304,7 +304,7 @@ to setup-pigs
     let y random-pycor mod (building-y - 1)
     setxy x y
     set size 4
-    set pace random-normal 0.5 0.2
+    set pace random-normal 0.8 0.2
     set move true
     set standing 0
     set achieved false
@@ -333,7 +333,7 @@ to setup-pigs
     let y random-pycor mod (building-y - 1)
     setxy x y
     set size 2
-    set pace random-normal 0.5 0.2
+    set pace random-normal 0.8 0.2
     set move true
     set standing 0
     set achieved false
@@ -364,7 +364,7 @@ to setup-pigs
     let y random-pycor mod (building-y - 1)
     setxy x y
     set size 2
-    set pace random-normal 0. 0.2
+    set pace random-normal 0.8 0.2
     set move true
     set standing 0
     set achieved false
@@ -397,7 +397,7 @@ to setup-pigs
     let y random-pycor mod (building-y - 1)
     setxy x y
     set size 4
-    set pace random-normal 0.5 0.2
+    set pace random-normal 0.8 0.2
     set move true
     set standing 0
     set achieved false
@@ -627,7 +627,7 @@ to get-pigs-childbirth
       let y random-pycor mod (building-y - 1)
       setxy x y
       set size 2
-      set pace random-normal 0.5 0.2
+      set pace random-normal 0.8 0.2
       set move true
       set standing 0
       set achieved false
@@ -654,7 +654,7 @@ to get-pigs-childbirth
       let y random-pycor mod (building-y - 1)
       setxy x y
       set size 2
-      set pace random-normal 1 0.2
+      set pace random-normal 0.8 0.2
       set move true
       set standing 0
       set achieved false
@@ -887,10 +887,10 @@ COUNTER
 11
 
 MONITOR
-148
-47
-205
-92
+106
+11
+163
+56
 NIL
 NIGHT
 17
@@ -928,7 +928,7 @@ NIL
 HORIZONTAL
 
 SLIDER
-25
+33
 232
 207
 265
@@ -998,10 +998,10 @@ DEATHS
 11
 
 MONITOR
-36
+9
+64
 66
-93
-111
+109
 DAYS
 DAYS
 17
@@ -1038,6 +1038,28 @@ MONITOR
 NIL
 CRUSHED
 17
+1
+11
+
+MONITOR
+73
+63
+135
+108
+MONTHS
+DAYS / 31
+1
+1
+11
+
+MONITOR
+142
+62
+192
+107
+YEARS
+(DAYS / 31) / 365
+1
 1
 11
 
