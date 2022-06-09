@@ -304,7 +304,7 @@ to setup-pigs
     let y random-pycor mod (building-y - 1)
     setxy x y
     set size 4
-    set pace random-normal 1 0.2
+    set pace random-normal 0.5 0.2
     set move true
     set standing 0
     set achieved false
@@ -333,7 +333,7 @@ to setup-pigs
     let y random-pycor mod (building-y - 1)
     setxy x y
     set size 2
-    set pace random-normal 1 0.2
+    set pace random-normal 0.5 0.2
     set move true
     set standing 0
     set achieved false
@@ -361,7 +361,7 @@ to setup-pigs
     let y random-pycor mod (building-y - 1)
     setxy x y
     set size 2
-    set pace random-normal 1 0.2
+    set pace random-normal 0.5 0.2
     set move true
     set standing 0
     set achieved false
@@ -391,7 +391,7 @@ to setup-pigs
     let y random-pycor mod (building-y - 1)
     setxy x y
     set size 4
-    set pace random-normal 1 0.3
+    set pace random-normal
     set move true
     set standing 0
     set achieved false
@@ -413,7 +413,7 @@ end
 
 to random-pig-goal [id]
   ask pig id [
-    ifelse age <  [
+    ifelse age < 7 [
       pig-goal-building who
     ][
       ifelse age < sexual-puberty and mother > -1 and random-boolean = true [
@@ -621,7 +621,7 @@ to get-pigs-childbirth
       let y random-pycor mod (building-y - 1)
       setxy x y
       set size 2
-      set pace random-normal 1 0.2
+      set pace random-normal 0.5 0.2
       set move true
       set standing 0
       set achieved false
@@ -863,7 +863,7 @@ INIT_CHILDREN_MALES
 INIT_CHILDREN_MALES
 0
 4
-0.0
+2.0
 1
 1
 NIL
