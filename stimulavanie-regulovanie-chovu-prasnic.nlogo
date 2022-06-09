@@ -115,7 +115,7 @@ to make-step
           ]
       ]
 
-      if moved[
+      if moved [
         let x round pxcor
         let y round pycor
         ;achieved goal destination
@@ -245,9 +245,29 @@ to setup-people
   ]
 end
 
+;Create pigs. Order of creation is important. Females needs to be first, because they can be mother of chilren.
 to setup-pigs
 
-   set CHILDREN_MALES INIT_CHILDREN_MALES
+  set FEMALES INIT_FEMALES
+  create-pigs INIT_FEMALES [
+    set color pink - 1
+    set old-color color
+    let x random-pxcor mod (building-x - 1)
+    let y random-pycor mod (building-y - 1)
+    setxy x y
+    set size 4
+    set pace random-normal 1 0.2
+    set move true
+    set standing 0
+    set achieved false
+    set sleep false
+    set male false
+    set death false
+    set age (1460 + (add-random-in-range 1460 2920))
+    random-pig-goal who
+  ]
+
+  set CHILDREN_MALES INIT_CHILDREN_MALES
    create-pigs INIT_CHILDREN_MALES [
       set color pink
       set old-color color
@@ -263,6 +283,7 @@ to setup-pigs
       set male true
       set death false
       set age (20 + (add-random-in-range 20 50))
+      set mother random INIT_FEMALES
       random-pig-goal who
     ]
 
@@ -282,6 +303,7 @@ to setup-pigs
       set male false
       set death false
       set age (20 + (add-random-in-range 20 50))
+      set mother random INIT_FEMALES
       random-pig-goal who
     ]
 
@@ -303,43 +325,39 @@ to setup-pigs
     set age (1460 + (add-random-in-range 1460 2920))
     random-pig-goal who
   ]
-
-  set FEMALES INIT_FEMALES
-  create-pigs INIT_FEMALES [
-    set color pink - 1
-    set old-color color
-    let x random-pxcor mod (building-x - 1)
-    let y random-pycor mod (building-y - 1)
-    setxy x y
-    set size 4
-    set pace random-normal 1 0.2
-    set move true
-    set standing 0
-    set achieved false
-    set sleep false
-    set male false
-    set death false
-    set age (1460 + (add-random-in-range 1460 2920))
-    random-pig-goal who
-  ]
 end
 
 to random-pig-goal [id]
   ask pig id [
-    let number random 55;
-    ifelse random-boolean [
-          pig-goal-random who
+    ifelse age < 30 [
+      pig-goal-building who
     ][
-      ifelse number mod 2 = 0 [
-        pig-goal-mud who
-      ] [
-        ifelse number mod 3 = 0 [
-          pig-goal-food who
-        ][
-          pig-goal-water who
+      ifelse age < 120 and mother > 0 [
+        let x 0
+        let y 0
+        ask pig mother [
+          set x goalx
+          set y goaly
         ]
-      ]
-    ]
+        set goalx x
+        set goaly y
+      ][
+        let number random 55;
+        ifelse random-boolean [
+          pig-goal-random who
+        ][
+          ifelse number mod 2 = 0 [
+            pig-goal-mud who
+          ][
+            ifelse number mod 3 = 0 [
+              pig-goal-food who
+            ][
+              pig-goal-water who
+            ] ;else number mod 3 = 0
+          ] ;else number mod 2 = 0
+        ] ;else random-boolean
+      ]; else age < 120
+    ] ;else age < 30
   ]
 end
 
@@ -549,7 +567,7 @@ INIT_CHILDREN_MALES
 INIT_CHILDREN_MALES
 0
 4
-0.0
+4.0
 1
 1
 NIL
@@ -586,7 +604,7 @@ INIT_FEMALES
 INIT_FEMALES
 0
 10
-8.0
+2.0
 1
 1
 NIL
@@ -616,7 +634,7 @@ INIT_CHILDREN_FEMALES
 INIT_CHILDREN_FEMALES
 0
 4
-0.0
+4.0
 1
 1
 NIL
