@@ -17,7 +17,7 @@ pigs-own [pace
   death
   old-color
   pregnancy pregnancy-probability pregnancy-duration
-  estrus estrus-cycle
+  estrus estrus-duration estrus-cycle
   mother
   sexual-maturity sexual-admission maturity
 ]
@@ -31,13 +31,18 @@ to go
     if NIGHT = false [
       wake-up-pigs
     ]
+  ]
+  ;EVERY DAY
+  if COUNTER mod (DAY-TICKS * 2) = 0 [
     set-pigs-older
     pigs-death
   ]
 
-  if COUNTER mod 90000 = 0 [
-    pigs-death
-  ]
+  get-pig-pregnant
+
+;  if COUNTER mod 90000 = 0 [
+;    pigs-death
+;  ]
 
   if random-boolean and random-boolean [
     animate-water
@@ -267,10 +272,12 @@ to setup-pigs
     set male false
     set death false
     set age (1460 + (add-random-in-range 1460 2920))
-    set estrus-cycle random random-normal 28 0.2
-    set sexual-maturity round random-normal 210 1
-    set sexual-admission round random-normal 230 3
     set maturity true
+    set estrus-cycle get-new-estrus-cycle-number maturity
+    set estrus-duration 0
+    set estrus false
+    set sexual-maturity get-new-sexual-maturity-number
+    set sexual-admission get-new-sexual-admission-number
     random-pig-goal who
   ]
 
@@ -290,10 +297,12 @@ to setup-pigs
     set male true
     set death false
     set age random-poisson 30
-    set estrus-cycle -1
-    set sexual-maturity round random-normal 210 1
-    set sexual-admission round random-normal 230 3
     set maturity false
+    set estrus-cycle 0
+    set estrus-duration 0
+    set estrus false
+    set sexual-maturity get-new-sexual-maturity-number
+    set sexual-admission get-new-sexual-admission-number
     set mother random INIT_FEMALES
     random-pig-goal who
   ]
@@ -314,10 +323,12 @@ to setup-pigs
     set male false
     set death false
     set age random-poisson 30
-    set estrus-cycle random random-normal 28 0.2
-    set sexual-maturity round random-normal 210 1
-    set sexual-admission round random-normal 230 3
     set maturity false
+    set estrus-cycle get-new-estrus-cycle-number maturity
+    set estrus-duration 0
+    set estrus false
+    set sexual-maturity get-new-sexual-maturity-number
+    set sexual-admission get-new-sexual-admission-number
     set mother random INIT_FEMALES
     random-pig-goal who
   ]
@@ -330,7 +341,7 @@ to setup-pigs
     let y random-pycor mod (building-y - 1)
     setxy x y
     set size 4
-    set pace random-normal 1 0.2
+    set pace random-normal 1 0.3
     set move true
     set standing 0
     set achieved false
@@ -339,9 +350,11 @@ to setup-pigs
     set death false
     set maturity true
     set age (1460 + (add-random-in-range 1460 2920))
-    set estrus-cycle -1
-    set sexual-maturity round random-normal 210 1
-    set sexual-admission round random-normal 230 3
+    set estrus-cycle 0
+    set estrus-duration 0
+    set estrus false
+    set sexual-maturity get-new-sexual-maturity-number
+    set sexual-admission get-new-sexual-admission-number
     random-pig-goal who
   ]
 end
@@ -400,6 +413,12 @@ to change-pig-color-in-building [id]
   ]
 end
 
+to get-pig-pregnant
+  ask pigs with [maturity = true] [
+;    if(MALES)
+  ]
+end
+
 to pigs-death
   ask pigs [
     if death [
@@ -442,9 +461,13 @@ to grow-up-pig [id]
       ifelse male = true [
         set color pink - 2
         set old-color color
+        set MALES MALES + 1
+        set CHILDREN_MALES CHILDREN_MALES - 1
       ][
         set color pink - 1
         set old-color color
+        set FEMALES FEMALES + 1
+        set CHILDREN_FEMALES CHILDREN_FEMALES - 1
       ]
     ]
   ]
@@ -458,7 +481,27 @@ end
 
 to set-pigs-older
   ask pigs [
-     set age age + 1
+    set age age + 1
+  ]
+
+  ask pigs with [male = false and maturity = true][
+    if estrus-cycle > 0 [ ;has estrus cycle
+      if estrus-duration > 0 [
+        ;estrus starts between 4,5 - 5,5 days after sex cycle started
+        ifelse estrus-duration > 4 and estrus-duration < 6 [
+          set estrus true
+        ][
+          set estrus false
+        ]
+      ]
+      ifelse estrus-duration > estrus-cycle [
+          ;renew estrus cycle
+          set estrus-duration 0
+          set estrus-cycle get-new-estrus-cycle-number maturity
+      ][
+        set estrus-duration estrus-duration + 1
+      ]
+    ]
   ]
 end
 
@@ -505,6 +548,39 @@ to pig-goal-building [id]
      set goalx (0 + (add-random-in-range 1 (building-x - 1)))
      set goaly (0 + (add-random-in-range 1 (building-y - 1)))
   ]
+end
+
+to-report get-new-estrus-cycle-number [pig-maturity]
+  let number 21
+  let difference random-normal 2 0.5
+  ifelse pig-maturity = true [
+    set number (number + difference)
+  ][
+    set number (number - difference)
+  ]
+  report round number
+end
+
+to-report get-new-sexual-maturity-number
+  let number 201
+  let difference random-normal 5 0.5
+  ifelse random-boolean = true [
+    set number (number + difference)
+  ][
+    set number (number - difference)
+  ]
+  report round number
+end
+
+to-report get-new-sexual-admission-number
+  let number 230
+  let difference random-normal 8 0.5
+  ifelse random-boolean = true [
+    set number (number + difference)
+  ][
+    set number (number - difference)
+  ]
+  report round number
 end
 
 ;Get random boolean.
@@ -602,7 +678,7 @@ INIT_CHILDREN_MALES
 INIT_CHILDREN_MALES
 0
 4
-4.0
+1.0
 1
 1
 NIL
@@ -639,7 +715,7 @@ INIT_FEMALES
 INIT_FEMALES
 0
 10
-0.0
+1.0
 1
 1
 NIL
@@ -654,7 +730,7 @@ INIT_MALES
 INIT_MALES
 0
 10
-0.0
+1.0
 1
 1
 NIL
@@ -669,7 +745,7 @@ INIT_CHILDREN_FEMALES
 INIT_CHILDREN_FEMALES
 0
 4
-4.0
+1.0
 1
 1
 NIL
