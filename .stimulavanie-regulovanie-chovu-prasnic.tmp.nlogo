@@ -19,7 +19,7 @@ pigs-own [pace
   pregnancy pregnancy-probability pregnancy-duration
   estrus estrus-cycle
   mother
-  sexual-maturity sexual-admission
+  sexual-maturity sexual-admission maturity
 ]
 
 to go
@@ -269,6 +269,7 @@ to setup-pigs
     set estrus-cycle random random-normal 28 0.2
     set sexual-maturity round random-normal 210 1
     set sexual-admission round random-normal 230 3
+    set maturity true
     random-pig-goal who
   ]
 
@@ -291,6 +292,7 @@ to setup-pigs
     set estrus-cycle -1
     set sexual-maturity round random-normal 210 1
     set sexual-admission round random-normal 230 3
+    set maturity false
     set mother random INIT_FEMALES
     random-pig-goal who
   ]
@@ -314,6 +316,7 @@ to setup-pigs
     set estrus-cycle random random-normal 28 0.2
     set sexual-maturity round random-normal 210 1
     set sexual-admission round random-normal 230 3
+    set maturity false
     set mother random INIT_FEMALES
     random-pig-goal who
   ]
@@ -333,6 +336,7 @@ to setup-pigs
     set sleep false
     set male true
     set death false
+    set maturity true
     set age (1460 + (add-random-in-range 1460 2920))
     set estrus-cycle -1
     set sexual-maturity round random-normal 210 1
@@ -431,13 +435,15 @@ end
 
 to grow-up-pig [id]
   ask pig id [
-    if sexual-maturity >= age and size != 4 [
+    if maturity = false and sexual-maturity <= age and size != 4 [
+      set maturity true
       set size 4
       ifelse male = true [
         set color pink - 2
-
+        set old-color color
       ][
         set color pink - 1
+        set old-color color
       ]
     ]
   ]
@@ -602,10 +608,10 @@ NIL
 HORIZONTAL
 
 MONITOR
-40
-47
-109
-92
+33
+12
+102
+57
 NIL
 COUNTER
 0
@@ -632,7 +638,7 @@ INIT_FEMALES
 INIT_FEMALES
 0
 10
-1.0
+0.0
 1
 1
 NIL
@@ -647,7 +653,7 @@ INIT_MALES
 INIT_MALES
 0
 10
-1.0
+0.0
 1
 1
 NIL
@@ -719,6 +725,17 @@ MONITOR
 457
 NIL
 DEATHS
+17
+1
+11
+
+MONITOR
+36
+66
+93
+111
+DAYS
+COUNTER mod DAY-TICKS
 17
 1
 11
