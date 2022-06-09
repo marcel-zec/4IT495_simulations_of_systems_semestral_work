@@ -340,13 +340,16 @@ to setup-pigs
     set sleep false
     set male true
     set death false
-    set age random-poisson 30
     set maturity false
     set estrus-cycle 0
     set estrus-duration 0
     set estrus false
     set sexual-maturity get-new-sexual-maturity-number
     set sexual-puberty round sexual-maturity / 1.75
+    set age random-poisson 30
+    if age >= sexual-puberty [
+      set size 3
+    ]
     set sexual-admission get-new-sexual-admission-number
     set mother random INIT_FEMALES
     set no-sex-days 0
@@ -361,20 +364,23 @@ to setup-pigs
     let y random-pycor mod (building-y - 1)
     setxy x y
     set size 2
-    set pace random-normal 0.5 0.2
+    set pace random-normal 0. 0.2
     set move true
     set standing 0
     set achieved false
     set sleep false
     set male false
     set death false
-    set age random-poisson 30
     set maturity false
     set estrus-cycle get-new-estrus-cycle-number maturity
     set estrus-duration 0
     set estrus false
     set sexual-maturity get-new-sexual-maturity-number
     set sexual-puberty round sexual-maturity / 1.75
+    set age random-poisson 30
+    if age >= sexual-puberty [
+      set size 3
+    ]
     set sexual-admission get-new-sexual-admission-number
     set mother random INIT_FEMALES
     set pregnancy-duration get-new-pregnancy-duration-number
@@ -391,7 +397,7 @@ to setup-pigs
     let y random-pycor mod (building-y - 1)
     setxy x y
     set size 4
-    set pace random-normal
+    set pace random-normal 0.5 0.2
     set move true
     set standing 0
     set achieved false
@@ -863,7 +869,7 @@ INIT_CHILDREN_MALES
 INIT_CHILDREN_MALES
 0
 4
-2.0
+1.0
 1
 1
 NIL
@@ -900,7 +906,7 @@ INIT_FEMALES
 INIT_FEMALES
 0
 10
-3.0
+2.0
 1
 1
 NIL
@@ -930,7 +936,7 @@ INIT_CHILDREN_FEMALES
 INIT_CHILDREN_FEMALES
 0
 4
-0.0
+1.0
 1
 1
 NIL
