@@ -75,7 +75,7 @@ to make-step
       ] ;standing a while when goal spo achieved
       [
         set standing 0
-        ifelse NIGHT or (pregnant = true and pregnancy-duration >= 1) [
+        ifelse NIGHT or (pregnant = true and pregnancy-duration = 1) [
           pig-goal-building who
         ] [
           random-pig-goal who
@@ -218,7 +218,7 @@ to setup
   set SOLD_CHILDREN_MALES 0
   set NIGHT true
   set DAY-TICKS 500
-  set building-x 3
+  set building-x 60
   set building-y 15
   set water-x 74
   set water-y-min 14
@@ -893,7 +893,7 @@ INIT_CHILDREN_MALES
 INIT_CHILDREN_MALES
 0
 4
-1.0
+0.0
 1
 1
 NIL
@@ -930,7 +930,7 @@ INIT_FEMALES
 INIT_FEMALES
 0
 10
-2.0
+3.0
 1
 1
 NIL
@@ -945,7 +945,7 @@ INIT_MALES
 INIT_MALES
 0
 10
-8.0
+1.0
 1
 1
 NIL
@@ -960,7 +960,7 @@ INIT_CHILDREN_FEMALES
 INIT_CHILDREN_FEMALES
 0
 4
-1.0
+0.0
 1
 1
 NIL
