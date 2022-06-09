@@ -1,7 +1,7 @@
 ; CODE START ;
 extensions [array]
 
-globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min COUNTER NIGHT CHILDREN_MALES CHILDREN_FEMALES MALES FEMALES DAY-TICKS DAYS DEATHS]
+globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min COUNTER NIGHT CHILDREN_MALES CHILDREN_FEMALES MALES FEMALES DAY-TICKS DAYS DEATHS CRUSHED]
 
 
 ; agents
@@ -16,11 +16,15 @@ pigs-own [pace
   age male
   death
   old-color
-  pregnancy pregnancy-probability pregnancy-duration
+  pregnant pregnancy-duration
   estrus estrus-duration estrus-cycle
   mother
-  sexual-maturity sexual-admission maturity
+  sexual-maturity sexual-puberty sexual-admission maturity
+  no-sex-days
 ]
+
+undirected-link-breed [pregnancies pregnancy]
+undirected-link-breed [children child]
 
 to go
   ;DAY/NIGHT has 500 ticks
@@ -38,17 +42,18 @@ to go
     pigs-death
   ]
 
-  get-pig-pregnant
-
-;  if COUNTER mod 90000 = 0 [
-;    pigs-death
-;  ]
+  ;EVERY 2/3 DAY
+  if COUNTER mod (DAY-TICKS + (DAY-TICKS / 2)) = 0 [
+    set-pigs-pregnant
+    get-pigs-childbirth
+  ]
 
   if random-boolean and random-boolean [
     animate-water
   ]
   set COUNTER COUNTER + 1
   make-step
+  crush-pigs
 end
 
 to make-step
@@ -64,7 +69,7 @@ to make-step
       ] ;standing a while when goal spo achieved
       [
         set standing 0
-        ifelse NIGHT [
+        ifelse NIGHT or (pregnant = true and pregnancy-duration >= 1) [
           pig-goal-building who
         ] [
           random-pig-goal who
@@ -148,13 +153,48 @@ to make-step
  ]
 end
 
+to crush-pigs
+ask pigs [
+    let pig-size size
+    let pig-male male
+    ask patch-here [
+      if count turtles-on neighbors >= 7 and pig-size = 2 [
+        ask myself [
+          die
+        ]
+        set DEATHS DEATHS + 1
+        set CRUSHED CRUSHED + 1
+        ifelse pig-male [
+          set CHILDREN_MALES CHILDREN_MALES - 1
+        ][
+          set CHILDREN_FEMALES CHILDREN_FEMALES - 1
+        ]
+       ]
+
+      if count turtles-on neighbors >= 8 and pig-size = 3 [
+        ask myself [
+          die
+        ]
+        set DEATHS DEATHS + 1
+        set CRUSHED CRUSHED + 1
+        ifelse pig-male [
+          set CHILDREN_MALES CHILDREN_MALES - 1
+        ][
+          set CHILDREN_FEMALES CHILDREN_FEMALES - 1
+        ]
+       ]
+      ]
+    ]
+end
+
 to setup
   clear-all        ;global reset
   set COUNTER 0
   set DEATHS 0
+  set CRUSHED 0
   set NIGHT true
   set DAY-TICKS 500
-  set building-x 28
+  set building-x 35
   set building-y 15
   set water-x 58
   set water-y-min 14
@@ -198,11 +238,11 @@ to setup-building [x y]
     [
      set pcolor brown + 2
     ]
-    if ((x > -1) and (x < 28) and (y > 4) and (y < 10))
+    if ((x > -1) and (x < building-x) and (y > 4) and (y < 10))
     [
      set pcolor brown + 1
     ]
-     if ((x > -1) and (x < 28) and (y > 6) and (y < 8))
+     if ((x > -1) and (x < building-x) and (y > 6) and (y < 8))
     [
      set pcolor black + 3
     ]
@@ -277,7 +317,11 @@ to setup-pigs
     set estrus-duration 0
     set estrus false
     set sexual-maturity get-new-sexual-maturity-number
+    set sexual-puberty round sexual-maturity / 1.75
     set sexual-admission get-new-sexual-admission-number
+    set pregnancy-duration get-new-pregnancy-duration-number
+    set pregnant false
+    set no-sex-days 0
     random-pig-goal who
   ]
 
@@ -302,8 +346,10 @@ to setup-pigs
     set estrus-duration 0
     set estrus false
     set sexual-maturity get-new-sexual-maturity-number
+    set sexual-puberty round sexual-maturity / 1.75
     set sexual-admission get-new-sexual-admission-number
     set mother random INIT_FEMALES
+    set no-sex-days 0
     random-pig-goal who
   ]
 
@@ -328,8 +374,12 @@ to setup-pigs
     set estrus-duration 0
     set estrus false
     set sexual-maturity get-new-sexual-maturity-number
+    set sexual-puberty round sexual-maturity / 1.75
     set sexual-admission get-new-sexual-admission-number
     set mother random INIT_FEMALES
+    set pregnancy-duration get-new-pregnancy-duration-number
+    set pregnant false
+    set no-sex-days 0
     random-pig-goal who
   ]
 
@@ -354,17 +404,19 @@ to setup-pigs
     set estrus-duration 0
     set estrus false
     set sexual-maturity get-new-sexual-maturity-number
+    set sexual-puberty round sexual-maturity / 1.75
     set sexual-admission get-new-sexual-admission-number
+    set no-sex-days 0
     random-pig-goal who
   ]
 end
 
 to random-pig-goal [id]
   ask pig id [
-    ifelse age < 30 [
+    ifelse age < 7 [
       pig-goal-building who
     ][
-      ifelse age < 120 and mother > 0 [
+      ifelse age < sexual-puberty and mother > -1 and random-boolean = true [
         let x 0
         let y 0
         ask pig mother [
@@ -413,9 +465,36 @@ to change-pig-color-in-building [id]
   ]
 end
 
-to get-pig-pregnant
-  ask pigs with [maturity = true] [
-;    if(MALES)
+to set-pigs-pregnant
+  ask pigs with [maturity = true and male = false and estrus = true and pregnant = false] [
+    if MALES > 0 [
+      let sex false;
+      let success false;
+      if any? pigs with [maturity = true and male = true and no-sex-days > 3] [
+        ask one-of pigs with [maturity = true and male = true and no-sex-days > 3] [
+          ifelse random 100 <= get-new-pregnancy-duration-number [
+            set success true
+            set sex true
+            create-pregnancy-with myself
+            set no-sex-days 0
+            ask my-pregnancies [
+              set color yellow
+            ]
+          ][
+            set no-sex-days 0
+            set sex true
+          ]
+        ]
+
+        if sex = true [
+          set no-sex-days 0
+        ]
+
+        if success = true [
+          set pregnant true
+        ]
+      ]
+    ]
   ]
 end
 
@@ -436,7 +515,7 @@ to pigs-death
         ]
       ]
      set DEATHS DEATHS + 1
-     die
+     ask my-pregnancies [ die ]
     ]
 
     if ( age / 365 ) > 15 [
@@ -455,19 +534,26 @@ end
 
 to grow-up-pig [id]
   ask pig id [
-    if maturity = false and sexual-maturity <= age and size != 4 [
+    if maturity = false [
+
+     if sexual-puberty <= age [
+       set size 3
+     ]
+
+     if sexual-maturity <= age [
       set maturity true
       set size 4
-      ifelse male = true [
-        set color pink - 2
-        set old-color color
-        set MALES MALES + 1
-        set CHILDREN_MALES CHILDREN_MALES - 1
-      ][
-        set color pink - 1
-        set old-color color
-        set FEMALES FEMALES + 1
-        set CHILDREN_FEMALES CHILDREN_FEMALES - 1
+        ifelse male = true [
+          set color pink - 2
+          set old-color color
+          set MALES MALES + 1
+          set CHILDREN_MALES CHILDREN_MALES - 1
+        ][
+          set color pink - 1
+          set old-color color
+          set FEMALES FEMALES + 1
+          set CHILDREN_FEMALES CHILDREN_FEMALES - 1
+        ]
       ]
     ]
   ]
@@ -479,6 +565,7 @@ to wake-up-pigs
   ]
 end
 
+;Pigs gets older. Count estrus duration for maturity females and no-sex days fro maturity males.
 to set-pigs-older
   ask pigs [
     set age age + 1
@@ -488,7 +575,7 @@ to set-pigs-older
     if estrus-cycle > 0 [ ;has estrus cycle
       if estrus-duration > 0 [
         ;estrus starts between 4,5 - 5,5 days after sex cycle started
-        ifelse estrus-duration > 4 and estrus-duration < 6 [
+        ifelse estrus-duration >= 4 and estrus-duration <= 6 [
           set estrus true
         ][
           set estrus false
@@ -502,8 +589,89 @@ to set-pigs-older
         set estrus-duration estrus-duration + 1
       ]
     ]
+
+    if pregnant = true [
+      set pregnancy-duration (pregnancy-duration - 1)
+    ]
+  ]
+
+  ask pigs with [maturity = true][
+    set no-sex-days no-sex-days + 1
   ]
 end
+
+to get-pigs-childbirth
+
+  ask pigs with [pregnant = true and pregnancy-duration = 0] [
+    let mother-id who
+   set estrus-cycle get-new-estrus-cycle-number maturity
+   set estrus-duration 0
+   set estrus false
+   set pregnant false
+   set pregnancy-duration get-new-pregnancy-duration-number
+   set no-sex-days 0
+   ask my-pregnancies [ die ]
+   let number-of-newborn round random-normal 12 1
+   print  number-of-newborn
+    hatch number-of-newborn [
+    ifelse random-boolean [
+      set color pink + 1
+      set old-color color
+      let x random-pxcor mod (building-x - 1)
+      let y random-pycor mod (building-y - 1)
+      setxy x y
+      set size 2
+      set pace random-normal 1 0.2
+      set move true
+      set standing 0
+      set achieved false
+      set sleep false
+      set male false
+      set death false
+      set age 0
+      set maturity false
+      set estrus-cycle get-new-estrus-cycle-number maturity
+      set estrus-duration 0
+      set estrus false
+      set sexual-maturity get-new-sexual-maturity-number
+      set sexual-puberty round sexual-maturity / 1.75
+      set sexual-admission get-new-sexual-admission-number
+      set pregnancy-duration get-new-pregnancy-duration-number
+      set pregnant false
+      set no-sex-days 0
+      set mother mother-id
+      set CHILDREN_FEMALES CHILDREN_FEMALES + 1
+    ][
+      set color pink
+      set old-color color
+      let x random-pxcor mod (building-x - 1)
+      let y random-pycor mod (building-y - 1)
+      setxy x y
+      set size 2
+      set pace random-normal 1 0.2
+      set move true
+      set standing 0
+      set achieved false
+      set sleep false
+      set male true
+      set death false
+      set age 0
+      set maturity false
+      set estrus-cycle 0
+      set estrus-duration 0
+      set estrus false
+      set pregnant false
+      set sexual-maturity get-new-sexual-maturity-number
+      set sexual-puberty round sexual-maturity / 1.75
+      set sexual-admission get-new-sexual-admission-number
+      set no-sex-days 0
+      set mother mother-id
+      set CHILDREN_MALES CHILDREN_MALES + 1
+      ]
+   ]
+  ]
+end
+
 
 ;Set goalx and goaly attributes to 'water' destiantion for pig with given ID.
 ;[id] - pig who attribute
@@ -581,6 +749,23 @@ to-report get-new-sexual-admission-number
     set number (number - difference)
   ]
   report round number
+end
+
+to-report get-new-pregnancy-duration-number
+  let number 115
+  let difference random 5
+  ifelse random-boolean = true [
+    set number (number + difference)
+  ][
+    set number (number - difference)
+  ]
+  report round number
+end
+
+to-report get-new-insemination-probability-number
+  let number 70
+  let difference random 30
+  report number + difference
 end
 
 ;Get random boolean.
@@ -678,7 +863,7 @@ INIT_CHILDREN_MALES
 INIT_CHILDREN_MALES
 0
 4
-1.0
+0.0
 1
 1
 NIL
@@ -715,7 +900,7 @@ INIT_FEMALES
 INIT_FEMALES
 0
 10
-1.0
+3.0
 1
 1
 NIL
@@ -745,7 +930,7 @@ INIT_CHILDREN_FEMALES
 INIT_CHILDREN_FEMALES
 0
 4
-1.0
+0.0
 1
 1
 NIL
@@ -800,7 +985,7 @@ MONITOR
 412
 71
 457
-NIL
+DEATH
 DEATHS
 17
 1
@@ -813,6 +998,39 @@ MONITOR
 111
 DAYS
 DAYS
+17
+1
+11
+
+MONITOR
+77
+411
+134
+456
+ALIVE
+MALES + FEMALES + CHILDREN_MALES + CHILDREN_FEMALES
+17
+1
+11
+
+MONITOR
+82
+508
+176
+553
+PREGNANCIES
+count pigs with [pregnant = true]
+17
+1
+11
+
+MONITOR
+15
+460
+82
+505
+NIL
+CRUSHED
 17
 1
 11
