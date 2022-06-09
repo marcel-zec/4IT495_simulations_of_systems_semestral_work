@@ -19,6 +19,7 @@ pigs-own [pace
   pregnancy pregnancy-probability pregnancy-duration
   estrus estrus-cycle
   mother
+  sexual-maturity sexual-admission
 ]
 
 to go
@@ -47,6 +48,7 @@ end
 to make-step
   ask pigs[
     change-pig-color-in-building who
+    grow-up-pig who
 
     if sleep = false [
 
@@ -264,48 +266,57 @@ to setup-pigs
     set male false
     set death false
     set age (1460 + (add-random-in-range 1460 2920))
+    set estrus-cycle random random-normal 28 0.2
+    set sexual-maturity round random-normal 210 1
+    set sexual-admission round random-normal 230 3
     random-pig-goal who
   ]
 
   set CHILDREN_MALES INIT_CHILDREN_MALES
    create-pigs INIT_CHILDREN_MALES [
-      set color pink
-      set old-color color
-      let x random-pxcor mod (building-x - 1)
-      let y random-pycor mod (building-y - 1)
-      setxy x y
-      set size 2
-      set pace random-normal 1 0.2
-      set move true
-      set standing 0
-      set achieved false
-      set sleep false
-      set male true
-      set death false
-      set age (20 + (add-random-in-range 20 50))
-      set mother random INIT_FEMALES
-      random-pig-goal who
-    ]
+    set color pink
+    set old-color color
+    let x random-pxcor mod (building-x - 1)
+    let y random-pycor mod (building-y - 1)
+    setxy x y
+    set size 2
+    set pace random-normal 1 0.2
+    set move true
+    set standing 0
+    set achieved false
+    set sleep false
+    set male true
+    set death false
+    set age random-poisson 30
+    set estrus-cycle -1
+    set sexual-maturity round random-normal 210 1
+    set sexual-admission round random-normal 230 3
+    set mother random INIT_FEMALES
+    random-pig-goal who
+  ]
 
   set CHILDREN_FEMALES INIT_CHILDREN_FEMALES
   create-pigs INIT_CHILDREN_FEMALES [
-      set color pink + 1
-      set old-color color
-      let x random-pxcor mod (building-x - 1)
-      let y random-pycor mod (building-y - 1)
-      setxy x y
-      set size 2
-      set pace random-normal 1 0.2
-      set move true
-      set standing 0
-      set achieved false
-      set sleep false
-      set male false
-      set death false
-      set age (20 + (add-random-in-range 20 50))
-      set mother random INIT_FEMALES
-      random-pig-goal who
-    ]
+    set color pink + 1
+    set old-color color
+    let x random-pxcor mod (building-x - 1)
+    let y random-pycor mod (building-y - 1)
+    setxy x y
+    set size 2
+    set pace random-normal 1 0.2
+    set move true
+    set standing 0
+    set achieved false
+    set sleep false
+    set male false
+    set death false
+    set age random-poisson 30
+    set estrus-cycle random random-normal 28 0.2
+    set sexual-maturity round random-normal 210 1
+    set sexual-admission round random-normal 230 3
+    set mother random INIT_FEMALES
+    random-pig-goal who
+  ]
 
   set MALES INIT_MALES
   create-pigs INIT_MALES [
@@ -323,6 +334,9 @@ to setup-pigs
     set male true
     set death false
     set age (1460 + (add-random-in-range 1460 2920))
+    set estrus-cycle -1
+    set sexual-maturity round random-normal 210 1
+    set sexual-admission round random-normal 230 3
     random-pig-goal who
   ]
 end
@@ -410,6 +424,21 @@ to pigs-death
         if random 80 = 1 [
           set death true
         ]
+      ]
+    ]
+  ]
+end
+
+to grow-up-pig [id]
+  ask pig id [
+    if sexual-maturity >= age and size != 4 [
+      set size 4
+      ifelse male = true [
+        set color pink - 2
+        set old-color color
+      ][
+        set color pink - 1
+        set old-color color
       ]
     ]
   ]
@@ -604,7 +633,7 @@ INIT_FEMALES
 INIT_FEMALES
 0
 10
-2.0
+0.0
 1
 1
 NIL
@@ -619,7 +648,7 @@ INIT_MALES
 INIT_MALES
 0
 10
-2.0
+0.0
 1
 1
 NIL
