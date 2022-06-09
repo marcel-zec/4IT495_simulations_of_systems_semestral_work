@@ -1,7 +1,7 @@
 ; CODE START ;
 extensions [array]
 
-globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min COUNTER NIGHT CHILDREN_MALES CHILDREN_FEMALES MALES FEMALES DAY-TICKS DAYS DEATHS CRUSHED]
+globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min COUNTER NIGHT CHILDREN_MALES CHILDREN_FEMALES MALES FEMALES DAY-TICKS DAYS DEATHS CRUSHED SOLD_MALES SOLD_FEMALES SOLD_CHILDREN_FEMALES SOLD_CHILDREN_MALES]
 
 
 ; agents
@@ -27,6 +27,7 @@ undirected-link-breed [pregnancies pregnancy]
 undirected-link-breed [children child]
 
 to go
+  sell-pigs
   ;DAY/NIGHT has 500 ticks
   if COUNTER mod DAY-TICKS = 0 [
     set DAYS DAYS + 1
@@ -46,6 +47,11 @@ to go
   if COUNTER mod (DAY-TICKS + (DAY-TICKS / 2)) = 0 [
     set-pigs-pregnant
     get-pigs-childbirth
+  ]
+
+  ;EVERY MONTH
+  if COUNTER mod (DAY-TICKS * 2 * 31) = 0 [
+    sell-pigs
   ]
 
   if random-boolean and random-boolean [
@@ -153,6 +159,20 @@ to make-step
  ]
 end
 
+to sell-pigs
+;  if MALES >= 2 [
+;    let one -1
+;    set one ([who] of (max-one-of pigs with [male = true] [age]))
+;    if one != -1 [
+;      ask pig one [
+;      die
+;    ]
+;    set SOLD_MALES SOLD_MALES + 1
+;    ]
+;
+;  ]
+end
+
 to crush-pigs
 ask pigs [
     let pig-size size
@@ -192,13 +212,17 @@ to setup
   set COUNTER 0
   set DEATHS 0
   set CRUSHED 0
+  set SOLD_MALES 0
+  set SOLD_FEMALES 0
+  set SOLD_CHILDREN_FEMALES 0
+  set SOLD_CHILDREN_MALES 0
   set NIGHT true
   set DAY-TICKS 500
-  set building-x 35
+  set building-x 50
   set building-y 15
-  set water-x 58
+  set water-x 74
   set water-y-min 14
-  set food-x 58
+  set food-x 74
   set food-y-max 15
   set mud-x-max 36
   set mud-y-min 18
@@ -249,7 +273,7 @@ to setup-building [x y]
 end
 
 to setup-water [x y]
-  if ((x > water-x) and (x < 65) and (y > water-y-min) and (y < 34))[
+  if ((x > water-x) and (x < 81) and (y > water-y-min) and (y < 34))[
      ifelse random-boolean [
       ifelse NIGHT [set pcolor blue - 1][set pcolor blue + 1]
      ][
@@ -259,7 +283,7 @@ to setup-water [x y]
 end
 
 to setup-food [x y]
-  if ((x > 58) and (x < 65) and (y > -1) and (y < 15))
+  if ((x > food-x) and (x < 81) and (y > -1) and (y < 15))
   [
     ifelse random-boolean [
        ifelse NIGHT [set pcolor yellow - 2][set pcolor yellow + 2]
@@ -802,7 +826,7 @@ end
 GRAPHICS-WINDOW
 210
 10
-1128
+1352
 481
 -1
 -1
@@ -817,7 +841,7 @@ GRAPHICS-WINDOW
 0
 1
 0
-64
+80
 0
 32
 0
@@ -906,7 +930,7 @@ INIT_FEMALES
 INIT_FEMALES
 0
 10
-2.0
+4.0
 1
 1
 NIL
@@ -921,7 +945,7 @@ INIT_MALES
 INIT_MALES
 0
 10
-1.0
+2.0
 1
 1
 NIL
@@ -1060,6 +1084,61 @@ MONITOR
 YEARS
 (DAYS / 31) / 12
 1
+1
+11
+
+MONITOR
+346
+519
+450
+564
+NIL
+SOLD_MALES
+17
+1
+11
+
+MONITOR
+346
+566
+450
+611
+NIL
+SOLD_FEMALES
+17
+1
+11
+
+MONITOR
+451
+519
+602
+564
+NIL
+SOLD_CHILDREN_MALES
+17
+1
+11
+
+MONITOR
+451
+566
+602
+611
+NIL
+SOLD_CHILDREN_FEMALES
+17
+1
+11
+
+MONITOR
+604
+544
+671
+589
+SOLD
+SOLD_MALES + SOLD_FEMALES + SOLD_CHILDREN_FEMALES + SOLD_CHILDREN_MALES
+17
 1
 11
 
