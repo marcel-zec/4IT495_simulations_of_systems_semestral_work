@@ -1,7 +1,7 @@
 ; CODE START ;
 extensions [array]
 
-globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min COUNTER NIGHT CHILDREN_MALES CHILDREN_FEMALES MALES FEMALES DAY-TICKS DAYS DEATHS CRUSHED SOLD_MALES SOLD_FEMALES SOLD_CHILDREN_FEMALES SOLD_CHILDREN_MALES]
+globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min COUNTER NIGHT CHILDREN_MALES CHILDREN_FEMALES MALES FEMALES DAY-TICKS DAYS DEATHS CRUSHED SOLD_MALES SOLD_FEMALES SOLD_CHILDREN_FEMALES SOLD_CHILDREN_MALES MONEY]
 
 
 ; agents
@@ -53,6 +53,7 @@ to go
   ;EVERY MONTH
   if COUNTER mod (DAY-TICKS * 2 * 31) = 0 [
     sell-pigs
+    buy-food
   ]
 
 ;  if random-boolean and random-boolean [
@@ -91,7 +92,7 @@ to make-step
     [ ;else
       ifelse reverse-move > 0 [
       ;reverse when blocked by other agents
-        ifelse(reverse-move < 3)[
+        ifelse(reverse-move <= 3)[
           set reverse-move reverse-move + 1
           jump (-1 * pace)
         ] ;ifelse  ifelse(reverse-move < 3)
@@ -167,6 +168,31 @@ to make-step
  ]
 end
 
+to buy-food
+  let babies-count count pigs with [age <= 50]
+  let price-for-babies count-price-for-food babies-count 1 20 15
+
+  let children-count count pigs with [age > 50 and age <= 90]
+  let price-for-children count-price-for-food children-count 1.5 20 15
+
+  let pregnant-count count pigs with [pregnant = true]
+  let price-for-pregnant count-price-for-food pregnant-count 3 20 16
+
+  let maturity-count count pigs with [pregnant = false and maturity = true]
+  let price-for-maturity count-price-for-food maturity-count 3 20 16
+
+  set MONEY (MONEY - price-for-babies - price-for-children - price-for-pregnant - price-for-maturity)
+end
+
+to-report count-price-for-food [amount-of-pigs kilo-for-pig weight-of-package price-for-package]
+  if amount-of-pigs = 0 [
+    report 0
+  ]
+  let kilos (amount-of-pigs * kilo-for-pig)
+  let packages (kilos / weight-of-package) + 1
+  report packages * price-for-package
+end
+
 to sell-pigs
   let sell-children-males false
   if CHILDREN_MALES > 12 and CHILDREN_FEMALES > 8 and count pigs with [pregnant = true] >= 1[
@@ -194,7 +220,7 @@ to sell-pigs
     ]
   ]
 
-  if FEMALES > 10 and count pigs with [pregnant = true] >= 5 [
+  if FEMALES > 8 and count pigs with [pregnant = true] >= 6 [
     let potencional count pigs with [male = false and pregnant = false and maturity = true]
     while [potencional > 0] [
       sell-female-pig
@@ -202,10 +228,13 @@ to sell-pigs
     ]
   ]
 
+   while [CHILDREN_FEMALES > 18 and count pigs with [pregnant = true] >= 1] [
+     sell-young-female-pig
+   ]
 
-    while [CHILDREN_FEMALES > 25 and count pigs with [pregnant = true] >= 1] [
-      sell-young-female-pig
-    ]
+  while [MALES > FEMALES / 2] [
+     sell-male-pig
+   ]
 
 
 end
@@ -223,6 +252,26 @@ to sell-young-male-in-puberty-pig
       ask pig id [
         set CHILDREN_MALES CHILDREN_MALES - 1
         set SOLD_CHILDREN_MALES SOLD_CHILDREN_MALES + 1
+        set MONEY (MONEY + get-sell-price age)
+        die
+      ]
+  ]
+end
+
+to sell-male-pig
+      let max-age -1
+      let id -1
+      ask pigs with [male = true and maturity = true] [
+        if age > max-age [
+          set max-age age
+          set id who
+        ]
+      ]
+  if id > -1 [
+      ask pig id [
+        set MALES MALES - 1
+        set SOLD_MALES SOLD_MALES + 1
+        set MONEY (MONEY + get-sell-price age)
         die
       ]
   ]
@@ -241,6 +290,7 @@ to sell-young-male-pig
       ask pig id [
         set CHILDREN_MALES CHILDREN_MALES - 1
         set SOLD_CHILDREN_MALES SOLD_CHILDREN_MALES + 1
+        set MONEY (MONEY + get-sell-price age)
         die
       ]
   ]
@@ -259,6 +309,7 @@ to sell-young-female-pig
       ask pig id [
         set CHILDREN_FEMALES CHILDREN_FEMALES - 1
         set SOLD_CHILDREN_FEMALES SOLD_CHILDREN_FEMALES + 1
+        set MONEY (MONEY + get-sell-price age)
         die
       ]
    ]
@@ -285,32 +336,30 @@ to sell-female-pig
       ask pig id [
         set FEMALES FEMALES - 1
         set SOLD_FEMALES SOLD_FEMALES + 1
+        set MONEY (MONEY + get-sell-price age)
         die
       ]
   ]
 end
 
-
-to sell-male-pig
-  let max-age  0
-      let id -1
-      ask pigs [
-        if age > max-age [
-          set max-age age
-          set id who
-        ]
-      ]
-  if id > -1 [
-      ask pig id [
-        ifelse maturity = true [
-          set MALES MALES - 1
-          set SOLD_MALES SOLD_MALES + 1
-        ][
-          set CHILDREN_MALES CHILDREN_MALES - 1
-          set SOLD_CHILDREN_MALES SOLD_CHILDREN_MALES + 1
-        ]
-        die
-      ]
+to-report get-sell-price [pig-age]
+  if pig-age < 124 [
+    report 1 * random-normal 35 3
+  ]
+  if pig-age > 124 and pig-age <= 155 [
+    report 1.2 * random-normal 60 3
+  ]
+  if pig-age > 155 and pig-age <= 217 [
+    report 1.5 * random-normal 90 3
+  ]
+  if pig-age > 217 and pig-age <= 240 [
+    report 1.75 * random-normal 90 3
+  ]
+  if pig-age > 240 and pig-age <= 730 [
+    report 2 * random-normal 160 5
+  ]
+  if pig-age > 730 [
+    report 3 * random-normal 260 9
   ]
 end
 
@@ -353,6 +402,7 @@ to setup
   set COUNTER 0
   set DEATHS 0
   set CRUSHED 0
+  set MONEY 500
   set SOLD_MALES 0
   set SOLD_FEMALES 0
   set SOLD_CHILDREN_FEMALES 0
@@ -509,6 +559,7 @@ to setup-pigs
     set estrus-cycle 0
     set estrus-duration 0
     set estrus false
+    set pregnant false
     set sexual-maturity get-new-sexual-maturity-number
     set sexual-puberty round sexual-maturity / 1.75
     set age random-poisson 30
@@ -540,6 +591,7 @@ to setup-pigs
     set estrus-cycle get-new-estrus-cycle-number maturity
     set estrus-duration 0
     set estrus false
+    set pregnant false
     set sexual-maturity get-new-sexual-maturity-number
     set sexual-puberty round sexual-maturity / 1.75
     set age random-poisson 30
@@ -574,6 +626,7 @@ to setup-pigs
     set estrus-cycle 0
     set estrus-duration 0
     set estrus false
+    set pregnant false
     set sexual-maturity get-new-sexual-maturity-number
     set sexual-puberty round sexual-maturity / 1.75
     set sexual-admission get-new-sexual-admission-number
@@ -591,11 +644,6 @@ to random-pig-goal [id]
         let x 0
         let y 0
         ifelse any? turtles with [who = mother][
-          ;TODO
-          ;TODO
-          ;TODO - remove reference to mother when mothers died or sold
-          ;TODO
-          ;TODO
           ask pig mother [
             set x goalx
             set y goaly
@@ -656,7 +704,6 @@ to set-pigs-pregnant
           if no-sex-days > 6 [
             set probability (probability - (no-sex-days * 1.1))
           ]
-          print probability
           ifelse random 100 <= probability [
             set success true
             set sex true
@@ -1084,7 +1131,7 @@ INIT_FEMALES
 INIT_FEMALES
 0
 10
-3.0
+2.0
 1
 1
 NIL
@@ -1099,7 +1146,7 @@ INIT_MALES
 INIT_MALES
 0
 10
-2.0
+1.0
 1
 1
 NIL
@@ -1293,6 +1340,17 @@ MONITOR
 SOLD
 SOLD_MALES + SOLD_FEMALES + SOLD_CHILDREN_FEMALES + SOLD_CHILDREN_MALES
 17
+1
+11
+
+MONITOR
+1396
+45
+1502
+90
+NIL
+MONEY
+2
 1
 11
 
