@@ -68,6 +68,10 @@ proestrus (pokiaľ nie je prasnica prasná).
 
 ##### Predpôrodné obdobie a pôrod [1]
 Dĺžka prasnosti je pri prasniciach ***115 ± 5 dní***.
+V prvých 4-6 dňoch z nich vyteká sivobelasý hlienovitý sekrét. Involúcia (znovunavrátenie) maternice do pôvodného stavu trvá asi 3 týždne. Plnohodnotný
+pohlavný cyklus a nástup do ruje po oprasení nastupuje spravidla ***3–9 dní po odstave***,
+v závislosti od kvality pohlavného cyklu. Rozmnožovacia schopnosť prasnice trvá do
+veku ***6-10*** rokov, pričom do 4.-6. prasenia sa reprodukčné parametre prasníc zvyšujú.
 
 ##### Prirodzené pripúšťanie [1]
 - V bežných chovoch sa kance obmieňajú po 16-24 mesiacoch
@@ -94,6 +98,7 @@ stimulácia.
 prasnice plus ***0,3 až 0,4 kg*** na každé prasiatko. 
 - Od hmotnosti 15 kg sa ošípané s postupným prechodom zo štartéru kŕmia zmesou pre ošípané vo výkrme OŠ 03 s optimálnym pomerom živín, aby sa maximálne využil rastový potenciál zvierat pre tvorbu svaloviny. Táto zmes sa používa do dosiahnutia 35 kg, kedy končí predvýkrm. Smerodajným ukazovateľom pri dobrom kŕmení je dosiahnutie živej hmotnosti 36 - 40 kg vo veku 90 dní. V tejto hmotnosti sa počíta s denným príjmom zmesi
 ***1,5 kg***.
+  - Po presune do odchovne sa prechádza plynule na štartérovú kŕmnu zmes, ktorú skrmujeme ***do hmotnosti cca 15 kg a veku cca 50 dní***.
 - Plemenné kance sa kŕmia kŕmnou zmesou OŠ 10, ktorá sa skrmuje v závislosti od veku, kondície a pohlavného zaťaženia v dennom množstve ***2,0 – 3,5*** kg. 
 
 ##### Stimulácii „nástupu“ puberty u prepubertálnych prasničiek [2]
