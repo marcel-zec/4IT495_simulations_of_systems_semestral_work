@@ -1,7 +1,7 @@
 ; CODE START ;
 extensions [array]
 
-globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min COUNTER NIGHT CHILDREN_MALES CHILDREN_FEMALES MALES FEMALES DAY-TICKS DAYS DEATHS CRUSHED SOLD_MALES SOLD_FEMALES SOLD_CHILDREN_FEMALES SOLD_CHILDREN_MALES MONEY]
+globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min COUNTER NIGHT CHILDREN_MALES CHILDREN_FEMALES MALES FEMALES DAY-TICKS DAYS DEATHS CRUSHED SOLD_MALES SOLD_FEMALES SOLD_CHILDREN_FEMALES SOLD_CHILDREN_MALES MONEY PREGNANCY_PROBABILITY]
 
 
 ; agents
@@ -19,6 +19,7 @@ pigs-own [pace
   pregnant pregnancy-duration
   estrus estrus-duration estrus-cycle
   wean wean-duration
+  wean-estrus-pause bad-fertility
   mother
   sexual-maturity sexual-puberty sexual-admission maturity
   no-sex-days
@@ -40,6 +41,7 @@ to go
   ]
   ;EVERY DAY
   if COUNTER mod (DAY-TICKS * 2) = 0 [
+    wean-pigs
     set-pigs-older
     pigs-death
   ]
@@ -250,7 +252,10 @@ to sell-young-male-in-puberty-pig
         ]
       ]
   if id > -1 [
-      ask pig id [
+     ask pig id [
+      ask my-children [
+        die
+      ]
         set CHILDREN_MALES CHILDREN_MALES - 1
         set SOLD_CHILDREN_MALES SOLD_CHILDREN_MALES + 1
         set MONEY (MONEY + get-sell-price age)
@@ -288,7 +293,12 @@ to sell-young-male-pig
         ]
       ]
   if id > -1 [
-      ask pig id [
+     ask pig id [
+
+      ask my-children [
+        die
+      ]
+
         set CHILDREN_MALES CHILDREN_MALES - 1
         set SOLD_CHILDREN_MALES SOLD_CHILDREN_MALES + 1
         set MONEY (MONEY + get-sell-price age)
@@ -307,7 +317,11 @@ to sell-young-female-pig
         ]
       ]
   if id > -1 [
-      ask pig id [
+     ask pig id [
+      ask my-children [
+        die
+      ]
+
         set CHILDREN_FEMALES CHILDREN_FEMALES - 1
         set SOLD_CHILDREN_FEMALES SOLD_CHILDREN_FEMALES + 1
         set MONEY (MONEY + get-sell-price age)
@@ -419,7 +433,6 @@ to setup
   set food-y-max 15
   set mud-x-max 36
   set mud-y-min 18
-
   setup-farm
   setup-pigs
 end
@@ -535,6 +548,7 @@ to setup-pigs
     set estrus false
     set wean false
     set wean-duration 0
+    set bad-fertility 0
     set sexual-maturity get-new-sexual-maturity-number
     set sexual-puberty round sexual-maturity / 1.75
     set sexual-admission get-new-sexual-admission-number
@@ -600,6 +614,7 @@ to setup-pigs
     set pregnant false
     set wean false
     set wean-duration 0
+    set bad-fertility 0
     set sexual-maturity get-new-sexual-maturity-number
     set sexual-puberty round sexual-maturity / 1.75
     set age random-poisson 30
@@ -708,12 +723,18 @@ to set-pigs-pregnant
     if MALES > 0 [
       let sex false;
       let success false;
+      let minus-probability (bad-fertility / 0.75)
       if any? pigs with [maturity = true and male = true and no-sex-days > 3] [
         ask one-of pigs with [maturity = true and male = true and no-sex-days > 3] [
           let probability (70 + random 30)
+          set probability (probability - minus-probability)
           if no-sex-days > 6 [
             set probability (probability - (no-sex-days * 1.5))
           ]
+
+          set PREGNANCY_PROBABILITY probability
+          update-plots
+
           ifelse random 100 <= probability [
             set success true
             set sex true
@@ -778,13 +799,14 @@ to grow-up-pig [id]
   ask pig id [
     if maturity = false [
 
+      ;get bigger
      if sexual-puberty <= age [
        set size 3
      ]
 
+      ;get mature
      if sexual-maturity <= age [
       set maturity true
-
       set size 4
         ifelse male = true [
           set color pink - 2
@@ -808,6 +830,28 @@ to wake-up-pigs
   ]
 end
 
+to wean-pigs
+  ask pigs with [wean = true][
+    if wean-duration >= WEAN-TIME [
+      ask my-children [
+         die
+      ]
+      set wean false
+      set wean-duration 0
+      if WEAN-TIME = 21 [
+        set bad-fertility bad-fertility + 1
+        set wean-estrus-pause random-normal 10 0.3
+      ]
+      if WEAN-TIME = 28 [
+        set wean-estrus-pause random-normal 6 0.5
+      ]
+      if WEAN-TIME = 35 [
+        set wean-estrus-pause random-normal 5 0.3
+      ]
+    ]
+  ]
+end
+
 ;Pigs gets older. Count estrus duration for maturity females and no-sex days fro maturity males.
 to set-pigs-older
   ask pigs [
@@ -823,13 +867,18 @@ to set-pigs-older
         ][
           set estrus false
         ]
-      ]
+      ] ;if estrus-duration > 0
+
       ifelse estrus-duration > estrus-cycle [
           ;renew estrus cycle
           set estrus-duration 0
           set estrus-cycle get-new-estrus-cycle-number maturity
       ][
-        set estrus-duration estrus-duration + 1
+        ifelse wean = true [
+          set wean-duration wean-duration + 1
+        ][
+          set estrus-duration estrus-duration + 1
+        ]
       ]
     ]
 
@@ -852,6 +901,7 @@ to get-pigs-childbirth
    set estrus false
    set pregnant false
    set pregnancy-duration get-new-pregnancy-duration-number
+   set wean true
    set no-sex-days 0
    ask my-pregnancies [ die ]
    let number-of-newborn round random-normal 12 1
@@ -1387,6 +1437,39 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot MONEY"
+
+SLIDER
+816
+537
+988
+570
+WEAN-TIME
+WEAN-TIME
+21
+35
+21.0
+7
+1
+NIL
+HORIZONTAL
+
+PLOT
+1102
+595
+1729
+801
+PREGNANCY_PROBABILITY
+PROBABILITY
+DAYS
+0.0
+10.0
+0.0
+100.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot PREGNANCY_PROBABILITY"
 
 @#$#@#$#@
 ## WHAT IS IT?
