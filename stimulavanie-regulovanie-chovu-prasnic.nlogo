@@ -1,7 +1,9 @@
 ; CODE START ;
 extensions [array]
 
-globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min COUNTER NIGHT CHILDREN_MALES CHILDREN_FEMALES MALES FEMALES DAY-TICKS DAYS DEATHS CRUSHED SOLD_MALES SOLD_FEMALES SOLD_CHILDREN_FEMALES SOLD_CHILDREN_MALES MONEY PREGNANCY_PROBABILITY]
+globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min
+  COUNTER NIGHT CHILDREN_MALES CHILDREN_FEMALES MALES FEMALES DAY-TICKS DAYS DEATHS CRUSHED
+  SOLD_MALES SOLD_FEMALES SOLD_CHILDREN_FEMALES SOLD_CHILDREN_MALES MONEY MONEY_SWITCH_MALES MONEY_ESTRUS_STIMULATION PREGNANCY_PROBABILITY]
 
 
 ; agents
@@ -17,7 +19,7 @@ pigs-own [pace
   death
   old-color
   pregnant pregnancy-duration
-  estrus estrus-duration estrus-cycle
+  estrus estrus-duration estrus-cycle estrus-probability
   wean wean-duration
   wean-estrus-pause bad-fertility
   mother
@@ -219,10 +221,9 @@ to switch-male-pigs
       let pig-counter 0
       ask pigs with [male = true and maturity = true and no-sex-days > 6][
         if pig-counter <= max-pigs [
-           print "pig"
-          print no-sex-days
           set no-sex-days 0
           set MONEY MONEY - 30
+          set MONEY_SWITCH_MALES MONEY_SWITCH_MALES + 30
         ]
       ]
     ]
@@ -454,7 +455,9 @@ to setup
   set COUNTER 0
   set DEATHS 0
   set CRUSHED 0
-  set MONEY 500
+  set MONEY 1000
+  set MONEY_SWITCH_MALES 0
+  set MONEY_ESTRUS_STIMULATION 0
   set SOLD_MALES 0
   set SOLD_FEMALES 0
   set SOLD_CHILDREN_FEMALES 0
@@ -591,6 +594,7 @@ to setup-pigs
     set pregnancy-duration get-new-pregnancy-duration-number
     set pregnant false
     set no-sex-days 0
+    set estrus-probability 100
     random-pig-goal who
   ]
 
@@ -662,6 +666,7 @@ to setup-pigs
     set pregnancy-duration get-new-pregnancy-duration-number
     set pregnant false
     set no-sex-days 0
+    set estrus-probability 100
     random-pig-goal who
   ]
 
@@ -877,12 +882,30 @@ to wean-pigs
       if WEAN-TIME = 21 [
         set bad-fertility bad-fertility + 1
         set wean-estrus-pause random-normal 10 0.3
+        ifelse ESTRUS_STIMULATION [
+          set estrus-probability (100 - random 10)
+          set MONEY_ESTRUS_STIMULATION MONEY_ESTRUS_STIMULATION + 50
+        ][
+          set estrus-probability random-normal 30 5
+        ]
       ]
       if WEAN-TIME = 28 [
         set wean-estrus-pause random-normal 6 0.5
+        ifelse ESTRUS_STIMULATION [
+          set estrus-probability (100 - random 5)
+          set MONEY_ESTRUS_STIMULATION MONEY_ESTRUS_STIMULATION + 50
+        ][
+          set estrus-probability random-normal 50 5
+        ]
       ]
       if WEAN-TIME = 35 [
         set wean-estrus-pause random-normal 5 0.3
+        set estrus-probability (100 - random 10)
+      ]
+
+      if WEAN-TIME = 42 [
+        set wean-estrus-pause random-normal 4 0.3
+        set estrus-probability (100 - random 5)
       ]
     ]
   ]
@@ -899,7 +922,9 @@ to set-pigs-older
       if estrus-duration > 0 [
         ;estrus starts between 4,5 - 5,5 days after sex cycle started
         ifelse estrus-duration >= 4 and estrus-duration <= 6 [
-          set estrus true
+          if random 100 <= estrus-probability [
+            set estrus true
+          ]
         ][
           set estrus false
         ]
@@ -1428,10 +1453,10 @@ SOLD_MALES + SOLD_FEMALES + SOLD_CHILDREN_FEMALES + SOLD_CHILDREN_MALES
 11
 
 MONITOR
-1244
-494
-1350
-539
+1104
+489
+1210
+534
 NIL
 MONEY
 2
@@ -1475,10 +1500,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot MONEY"
 
 SLIDER
-816
-537
-988
-570
+814
+503
+986
+536
 WEAN-TIME
 WEAN-TIME
 21
@@ -1532,6 +1557,39 @@ SWITCH_DAYS
 1
 NIL
 HORIZONTAL
+
+SWITCH
+815
+539
+987
+572
+ESTRUS_STIMULATION
+ESTRUS_STIMULATION
+0
+1
+-1000
+
+MONITOR
+1105
+545
+1238
+590
+NIL
+MONEY_SWITCH_MALES
+17
+1
+11
+
+MONITOR
+1272
+523
+1461
+568
+NIL
+MONEY_ESTRUS_STIMULATION
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
