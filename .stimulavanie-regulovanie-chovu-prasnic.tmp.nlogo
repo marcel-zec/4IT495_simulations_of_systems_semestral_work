@@ -27,9 +27,9 @@ undirected-link-breed [pregnancies pregnancy]
 undirected-link-breed [children child]
 
 to go
-  sell-pigs
   ;DAY/NIGHT has 500 ticks
   if COUNTER mod DAY-TICKS = 0 [
+    update-plots
     set DAYS DAYS + 1
     set NIGHT not NIGHT
     setup-farm
@@ -176,10 +176,10 @@ to buy-food
   let price-for-children count-price-for-food children-count 1.5 20 15
 
   let pregnant-count count pigs with [pregnant = true]
-  let price-for-pregnant count-price-for-food pregnant-count 3 20 16
+  let price-for-pregnant count-price-for-food pregnant-count 3 20 18
 
   let maturity-count count pigs with [pregnant = false and maturity = true]
-  let price-for-maturity count-price-for-food maturity-count 3 20 16
+  let price-for-maturity count-price-for-food maturity-count 3 20 17
 
   set MONEY (MONEY - price-for-babies - price-for-children - price-for-pregnant - price-for-maturity)
 end
@@ -343,7 +343,7 @@ to sell-female-pig
 end
 
 to-report get-sell-price [pig-age]
-  if pig-age < 124 [
+  if pig-age <¨ 124 [
     report 1 * random-normal 35 3
   ]
   if pig-age > 124 and pig-age <= 155 [
@@ -399,6 +399,7 @@ end
 
 to setup
   clear-all        ;global reset
+  setup-plots
   set COUNTER 0
   set DEATHS 0
   set CRUSHED 0
@@ -1344,10 +1345,10 @@ SOLD_MALES + SOLD_FEMALES + SOLD_CHILDREN_FEMALES + SOLD_CHILDREN_MALES
 11
 
 MONITOR
-1396
-45
-1502
-90
+1244
+494
+1350
+539
 NIL
 MONEY
 2
@@ -1355,12 +1356,30 @@ MONEY
 11
 
 PLOT
-1423
-135
-1623
-285
-plot 1
+1375
+32
+1730
+307
+PIGS
+DAYS
+PIGS
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"pen-0" 1.0 0 -16777216 true "" "plot count pigs"
+
+PLOT
+1375
+308
+1730
+591
 MONEY
+DAYS
 MONEY
 0.0
 10.0
@@ -1370,7 +1389,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles"
+"default" 1.0 0 -16777216 true "" "plot MONEY"
 
 @#$#@#$#@
 ## WHAT IS IT?
