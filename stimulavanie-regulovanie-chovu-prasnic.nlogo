@@ -55,9 +55,9 @@ to go
     sell-pigs
   ]
 
-  if random-boolean and random-boolean [
-    animate-water
-  ]
+;  if random-boolean and random-boolean [
+;    animate-water
+;  ]
   set COUNTER COUNTER + 1
   make-step
   crush-pigs
@@ -69,6 +69,10 @@ to make-step
     grow-up-pig who
 
     if sleep = false [
+
+      if standing > 10 and achieved = false [
+        set reverse-move reverse-move + 1
+      ]
 
     ifelse achieved [
       ifelse standing < 10 [
@@ -92,7 +96,8 @@ to make-step
           jump (-1 * pace)
         ] ;ifelse  ifelse(reverse-move < 3)
         [
-          set reverse-move  0
+          set reverse-move 0
+           set standing 0
         ] ;else
       ] ;ifelse  reverse-move > 0
       [ ;else
@@ -135,7 +140,7 @@ to make-step
           ]
       ]
 
-      if moved [
+      ifelse moved = true [
         let x round pxcor
         let y round pycor
         ;achieved goal destination
@@ -151,7 +156,9 @@ to make-step
               set sleep true
             ]
          ]
-      ] ;if moved
+        ][;else moved
+          set standing standing + 1
+          ]
 
     ] ;else reverse-move > 0
    ] ;else achieved
@@ -162,7 +169,7 @@ end
 
 to sell-pigs
   let sell-children-males false
-  if CHILDREN_MALES > 10 and CHILDREN_FEMALES > 10 and count pigs with [pregnant = true] >= 1[
+  if CHILDREN_MALES > 12 and CHILDREN_FEMALES > 8 and count pigs with [pregnant = true] >= 1[
     set sell-children-males true
   ]
 
@@ -175,13 +182,13 @@ to sell-pigs
   ]
 
   set sell-children-males false
-  if (CHILDREN_MALES + CHILDREN_FEMALES) > 20 and CHILDREN_MALES > (CHILDREN_FEMALES / 2) and count pigs with [pregnant = true] >= 1[
+  if (CHILDREN_MALES + CHILDREN_FEMALES) > 50 and CHILDREN_MALES > (CHILDREN_FEMALES / 2) and count pigs with [pregnant = true] >= 1[
     set sell-children-males true
   ]
 
   if sell-children-males = true [
     let potencional count pigs with [male = true and maturity = false]
-    while [potencional > 2] [
+    while [potencional > 6] [
       sell-young-male-pig
       set potencional count pigs with [male = true and maturity = false]
     ]
@@ -196,6 +203,11 @@ to sell-pigs
   ]
 
 
+    while [CHILDREN_FEMALES > 25 and count pigs with [pregnant = true] >= 1] [
+      sell-young-female-pig
+    ]
+
+
 end
 
 to sell-young-male-in-puberty-pig
@@ -207,11 +219,13 @@ to sell-young-male-in-puberty-pig
           set id who
         ]
       ]
+  if id > -1 [
       ask pig id [
         set CHILDREN_MALES CHILDREN_MALES - 1
         set SOLD_CHILDREN_MALES SOLD_CHILDREN_MALES + 1
         die
       ]
+  ]
 end
 
 to sell-young-male-pig
@@ -223,11 +237,31 @@ to sell-young-male-pig
           set id who
         ]
       ]
+  if id > -1 [
       ask pig id [
         set CHILDREN_MALES CHILDREN_MALES - 1
         set SOLD_CHILDREN_MALES SOLD_CHILDREN_MALES + 1
         die
       ]
+  ]
+end
+
+to sell-young-female-pig
+      let min-age 999999999999999
+      let id -1
+      ask pigs with [male = false and size = 2] [
+        if age < min-age [
+          set min-age age
+          set id who
+        ]
+      ]
+  if id > -1 [
+      ask pig id [
+        set CHILDREN_FEMALES CHILDREN_FEMALES - 1
+        set SOLD_CHILDREN_FEMALES SOLD_CHILDREN_FEMALES + 1
+        die
+      ]
+   ]
 end
 
 
@@ -240,11 +274,20 @@ to sell-female-pig
           set id who
         ]
       ]
+  if id > -1 [
+
+    if any? turtles with [mother = id] [
+      ask pigs with [mother = id][
+        set mother -1
+      ]
+    ]
+
       ask pig id [
         set FEMALES FEMALES - 1
         set SOLD_FEMALES SOLD_FEMALES + 1
         die
       ]
+  ]
 end
 
 
@@ -257,6 +300,7 @@ to sell-male-pig
           set id who
         ]
       ]
+  if id > -1 [
       ask pig id [
         ifelse maturity = true [
           set MALES MALES - 1
@@ -267,6 +311,7 @@ to sell-male-pig
         ]
         die
       ]
+  ]
 end
 
 to crush-pigs
@@ -274,7 +319,7 @@ ask pigs [
     let pig-size size
     let pig-male male
     ask patch-here [
-      if count turtles-on neighbors >= 7 and pig-size = 2 [
+      if count turtles-on neighbors >= 8 and pig-size = 2 [
         ask myself [
           die
         ]
@@ -287,7 +332,7 @@ ask pigs [
         ]
        ]
 
-      if count turtles-on neighbors >= 8 and pig-size = 3 [
+      if count turtles-on neighbors >= 9 and pig-size = 3 [
         ask myself [
           die
         ]
@@ -607,7 +652,12 @@ to set-pigs-pregnant
       let success false;
       if any? pigs with [maturity = true and male = true and no-sex-days > 3] [
         ask one-of pigs with [maturity = true and male = true and no-sex-days > 3] [
-          ifelse random 100 <= get-new-pregnancy-duration-number [
+          let probability (70 + random 30)
+          if no-sex-days > 6 [
+            set probability (probability - (no-sex-days * 1.1))
+          ]
+          print probability
+          ifelse random 100 <= probability [
             set success true
             set sex true
             create-pregnancy-with myself
@@ -747,7 +797,6 @@ to get-pigs-childbirth
    set no-sex-days 0
    ask my-pregnancies [ die ]
    let number-of-newborn round random-normal 12 1
-   print  number-of-newborn
     hatch number-of-newborn [
     ifelse random-boolean [
       set color pink + 1
@@ -1035,7 +1084,7 @@ INIT_FEMALES
 INIT_FEMALES
 0
 10
-2.0
+3.0
 1
 1
 NIL
@@ -1050,7 +1099,7 @@ INIT_MALES
 INIT_MALES
 0
 10
-1.0
+2.0
 1
 1
 NIL
