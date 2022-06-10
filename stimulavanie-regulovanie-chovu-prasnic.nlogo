@@ -57,6 +57,16 @@ to go
   if COUNTER mod (DAY-TICKS * 2 * 31) = 0 [
     sell-pigs
     buy-food
+    if SWITCH_MALES [
+      switch-male-pigs
+    ]
+  ]
+
+
+  if SWITCH_MALES [
+     if COUNTER mod (DAY-TICKS * 2 * SWITCH_DAYS) = 0 [
+      switch-male-pigs
+    ]
   ]
 
 ;  if random-boolean and random-boolean [
@@ -194,6 +204,32 @@ to-report count-price-for-food [amount-of-pigs kilo-for-pig weight-of-package pr
   let kilos (amount-of-pigs * kilo-for-pig)
   let packages (kilos / weight-of-package) + 1
   report packages * price-for-package
+end
+
+to switch-male-pigs
+  let estrus-females count pigs with [estrus-cycle > 0 and estrus-duration <= 2 ]
+  let bad-male-pigs count pigs with [male = true and maturity = true and no-sex-days > 6]
+  let good-male-pigs count pigs with [male = true and maturity = true and no-sex-days <= 1]
+
+  if estrus-females > 0 [
+    if good-male-pigs < estrus-females [
+      let max-pigs round random-normal 2 0.3
+      print "max pigs"
+      print max-pigs
+      let pig-counter 0
+      ask pigs with [male = true and maturity = true and no-sex-days > 6][
+        if pig-counter <= max-pigs [
+           print "pig"
+          print no-sex-days
+          set no-sex-days 0
+          set MONEY MONEY - 30
+        ]
+      ]
+    ]
+  ]
+
+
+
 end
 
 to sell-pigs
@@ -1470,6 +1506,32 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot PREGNANCY_PROBABILITY"
+
+SWITCH
+816
+575
+988
+608
+SWITCH_MALES
+SWITCH_MALES
+0
+1
+-1000
+
+SLIDER
+816
+611
+988
+644
+SWITCH_DAYS
+SWITCH_DAYS
+7
+32
+21.0
+7
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
