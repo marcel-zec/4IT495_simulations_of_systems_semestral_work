@@ -88,6 +88,13 @@ stimulácia.
 - oplodnenie po I. inseminácii 70 % a viac
 - priemerná veľkosť vrhu 12 a viac 
 
+##### Výživa a kŕmenie [1]
+- Presun prasníc do pôrodných kotercov sa uskutočňuje obvykle okolo 110. dňa gravidity (štandardná dĺžka gravidity je 112-116 dní). V tomto období sa prasnice kŕmia už kŕmnou zmesou pre kojace prasnice OŠ 09 (PKK) v množstve do ***3,0 kg/deň***
+- Základom prepočtu denného príjmu krmiva počas dojčenia je ***2,2 kg*** krmiva na záchov
+prasnice plus ***0,3 až 0,4 kg*** na každé prasiatko. 
+- Od hmotnosti 15 kg sa ošípané s postupným prechodom zo štartéru kŕmia zmesou pre ošípané vo výkrme OŠ 03 s optimálnym pomerom živín, aby sa maximálne využil rastový potenciál zvierat pre tvorbu svaloviny. Táto zmes sa používa do dosiahnutia 35 kg, kedy končí predvýkrm. Smerodajným ukazovateľom pri dobrom kŕmení je dosiahnutie živej hmotnosti 36 - 40 kg vo veku 90 dní. V tejto hmotnosti sa počíta s denným príjmom zmesi
+***1,5 kg***.
+- Plemenné kance sa kŕmia kŕmnou zmesou OŠ 10, ktorá sa skrmuje v závislosti od veku, kondície a pohlavného zaťaženia v dennom množstve ***2,0 – 3,5*** kg. 
 
 ##### Stimulácii „nástupu“ puberty u prepubertálnych prasničiek [2]
 - denný kontakt prasničiek vo veku 160 – 180 dní s kancom, minimálne po dobu 15. minút, vyvoláva ruju u 70 – 80 % zvierat do 28 dní
