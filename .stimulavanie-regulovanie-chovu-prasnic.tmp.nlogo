@@ -18,6 +18,7 @@ pigs-own [pace
   old-color
   pregnant pregnancy-duration
   estrus estrus-duration estrus-cycle
+  wean wean-duration
   mother
   sexual-maturity sexual-puberty sexual-admission maturity
   no-sex-days
@@ -343,7 +344,7 @@ to sell-female-pig
 end
 
 to-report get-sell-price [pig-age]
-  if pig-age <¨ 124 [
+  if pig-age <= 124 [
     report 1 * random-normal 35 3
   ]
   if pig-age > 124 and pig-age <= 155 [
@@ -532,6 +533,8 @@ to setup-pigs
     set estrus-cycle get-new-estrus-cycle-number maturity
     set estrus-duration 0
     set estrus false
+    set wean false
+    set wean-duration 0
     set sexual-maturity get-new-sexual-maturity-number
     set sexual-puberty round sexual-maturity / 1.75
     set sexual-admission get-new-sexual-admission-number
@@ -560,6 +563,8 @@ to setup-pigs
     set estrus-cycle 0
     set estrus-duration 0
     set estrus false
+    set wean false
+    set wean-duration 0
     set pregnant false
     set sexual-maturity get-new-sexual-maturity-number
     set sexual-puberty round sexual-maturity / 1.75
@@ -593,6 +598,8 @@ to setup-pigs
     set estrus-duration 0
     set estrus false
     set pregnant false
+    set wean false
+    set wean-duration 0
     set sexual-maturity get-new-sexual-maturity-number
     set sexual-puberty round sexual-maturity / 1.75
     set age random-poisson 30
@@ -628,6 +635,8 @@ to setup-pigs
     set estrus-duration 0
     set estrus false
     set pregnant false
+    set wean false
+    set wean-duration 0
     set sexual-maturity get-new-sexual-maturity-number
     set sexual-puberty round sexual-maturity / 1.75
     set sexual-admission get-new-sexual-admission-number
@@ -703,7 +712,7 @@ to set-pigs-pregnant
         ask one-of pigs with [maturity = true and male = true and no-sex-days > 3] [
           let probability (70 + random 30)
           if no-sex-days > 6 [
-            set probability (probability - (no-sex-days * 1.1))
+            set probability (probability - (no-sex-days * 1.5))
           ]
           ifelse random 100 <= probability [
             set success true
@@ -775,6 +784,7 @@ to grow-up-pig [id]
 
      if sexual-maturity <= age [
       set maturity true
+
       set size 4
         ifelse male = true [
           set color pink - 2
@@ -836,7 +846,7 @@ end
 to get-pigs-childbirth
 
   ask pigs with [pregnant = true and pregnancy-duration = 0] [
-    let mother-id who
+   let mother-id who
    set estrus-cycle get-new-estrus-cycle-number maturity
    set estrus-duration 0
    set estrus false
@@ -849,56 +859,43 @@ to get-pigs-childbirth
     ifelse random-boolean [
       set color pink + 1
       set old-color color
-      let x random-pxcor mod (building-x - 1)
-      let y random-pycor mod (building-y - 1)
-      setxy x y
-      set size 2
-      set pace random-normal 0.8 0.2
-      set move true
-      set standing 0
-      set achieved false
-      set sleep false
       set male false
-      set death false
-      set age 0
-      set maturity false
       set estrus-cycle get-new-estrus-cycle-number maturity
-      set estrus-duration 0
-      set estrus false
-      set sexual-maturity get-new-sexual-maturity-number
-      set sexual-puberty round sexual-maturity / 1.75
-      set sexual-admission get-new-sexual-admission-number
       set pregnancy-duration get-new-pregnancy-duration-number
-      set pregnant false
-      set no-sex-days 0
-      set mother mother-id
       set CHILDREN_FEMALES CHILDREN_FEMALES + 1
     ][
       set color pink
       set old-color color
-      let x random-pxcor mod (building-x - 1)
-      let y random-pycor mod (building-y - 1)
-      setxy x y
-      set size 2
-      set pace random-normal 0.8 0.2
-      set move true
-      set standing 0
-      set achieved false
-      set sleep false
       set male true
-      set death false
-      set age 0
-      set maturity false
       set estrus-cycle 0
-      set estrus-duration 0
-      set estrus false
-      set pregnant false
-      set sexual-maturity get-new-sexual-maturity-number
-      set sexual-puberty round sexual-maturity / 1.75
-      set sexual-admission get-new-sexual-admission-number
-      set no-sex-days 0
-      set mother mother-id
       set CHILDREN_MALES CHILDREN_MALES + 1
+      ]
+
+     let x random-pxcor mod (building-x - 1)
+     let y random-pycor mod (building-y - 1)
+     setxy x y
+     set size 2
+     set pace random-normal 0.8 0.2
+     set move true
+     set standing 0
+     set achieved false
+     set sleep false
+     set maturity false
+     set age 0
+     set pregnant false
+     set estrus-duration 0
+     set estrus false
+     set wean false
+     set wean-duration 0
+     set death false
+     set no-sex-days 0
+     set mother mother-id
+     set sexual-maturity get-new-sexual-maturity-number
+     set sexual-puberty round sexual-maturity / 1.75
+     set sexual-admission get-new-sexual-admission-number
+     create-child-with myself
+      ask my-children [
+        set color pink
       ]
    ]
   ]
