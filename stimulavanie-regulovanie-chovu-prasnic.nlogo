@@ -3,7 +3,7 @@ extensions [array]
 
 globals [building-x building-y water-x water-y-min food-x food-y-max mud-x-max mud-y-min
   COUNTER NIGHT CHILDREN_MALES CHILDREN_FEMALES MALES FEMALES DAY-TICKS DAYS DEATHS CRUSHED
-  SOLD_MALES SOLD_FEMALES SOLD_CHILDREN_FEMALES SOLD_CHILDREN_MALES MONEY MONEY_SWITCH_MALES MONEY_ESTRUS_STIMULATION PREGNANCY_PROBABILITY]
+  SOLD_MALES SOLD_FEMALES SOLD_CHILDREN_FEMALES SOLD_CHILDREN_MALES MONEY MONEY_SWITCH_MALES MONEY_ESTRUS_STIMULATION PREGNANCY_PROBABILITY BORN]
 
 
 ; agents
@@ -31,52 +31,55 @@ undirected-link-breed [pregnancies pregnancy]
 undirected-link-breed [children child]
 
 to go
-  ;DAY/NIGHT has 500 ticks
-  if COUNTER mod DAY-TICKS = 0 [
-    update-plots
-    set DAYS DAYS + 1
-    set NIGHT not NIGHT
-    setup-farm
-    if NIGHT = false [
-      wake-up-pigs
+  ; 5 years simulation horizon
+  if COUNTER <= 912999 [
+    ;DAY/NIGHT has 500 ticks
+    if COUNTER mod DAY-TICKS = 0 [
+      update-plots
+      set DAYS DAYS + 1
+      set NIGHT not NIGHT
+      setup-farm
+      if NIGHT = false [
+        wake-up-pigs
+      ]
     ]
-  ]
-  ;EVERY DAY
-  if COUNTER mod (DAY-TICKS * 2) = 0 [
-    wean-pigs
-    set-pigs-older
-    pigs-death
-  ]
+    ;EVERY DAY
+    if COUNTER mod (DAY-TICKS * 2) = 0 [
+      wean-pigs
+      set-pigs-older
+      pigs-death
+    ]
 
-  ;EVERY 2/3 DAY
-  if COUNTER mod (DAY-TICKS + (DAY-TICKS / 2)) = 0 [
-    set-pigs-pregnant
-    get-pigs-childbirth
-    sell-pigs
-  ]
+    ;EVERY 2/3 DAY
+    if COUNTER mod (DAY-TICKS + (DAY-TICKS / 2)) = 0 [
+      set-pigs-pregnant
+      get-pigs-childbirth
+      sell-pigs
+    ]
 
-  ;EVERY MONTH
-  if COUNTER mod (DAY-TICKS * 2 * 31) = 0 [
-    sell-pigs
-    buy-food
+    ;EVERY MONTH
+    if COUNTER mod (DAY-TICKS * 2 * 31) = 0 [
+      sell-pigs
+      buy-food
+      if SWITCH_MALES [
+        switch-male-pigs
+      ]
+    ]
+
+
     if SWITCH_MALES [
-      switch-male-pigs
+      if COUNTER mod (DAY-TICKS * 2 * SWITCH_DAYS) = 0 [
+        switch-male-pigs
+      ]
     ]
-  ]
 
-
-  if SWITCH_MALES [
-     if COUNTER mod (DAY-TICKS * 2 * SWITCH_DAYS) = 0 [
-      switch-male-pigs
+    if random-boolean and random-boolean [
+      animate-water
     ]
-  ]
-
-;  if random-boolean and random-boolean [
-;    animate-water
-;  ]
-  set COUNTER COUNTER + 1
-  make-step
-  crush-pigs
+    set COUNTER COUNTER + 1
+    make-step
+    crush-pigs
+ ]
 end
 
 to make-step
@@ -551,17 +554,6 @@ to setup-mud [x y]
     ]
 end
 
-to setup-people
-  create-people 1
-  ask people [
-    set color blue
-    setxy random-pxcor random-pycor
-    set size 3
-    set pace random-normal 1 0.2
-    set move true
-  ]
-end
-
 ;Create pigs. Order of creation is important. Females needs to be first, because they can be mother of chilren.
 to setup-pigs
 
@@ -1004,6 +996,7 @@ to get-pigs-childbirth
      set sexual-maturity get-new-sexual-maturity-number
      set sexual-puberty round sexual-maturity / 1.75
      set sexual-admission get-new-sexual-admission-number
+     set BORN BORN + 1
      create-child-with myself
       ask my-children [
         set color pink
@@ -1220,17 +1213,6 @@ COUNTER
 1
 11
 
-MONITOR
-106
-11
-163
-56
-NIL
-NIGHT
-17
-1
-11
-
 SLIDER
 34
 157
@@ -1354,10 +1336,10 @@ MALES + FEMALES + CHILDREN_MALES + CHILDREN_FEMALES
 11
 
 MONITOR
-82
-508
-176
-553
+103
+483
+197
+528
 PREGNANCIES
 count pigs with [pregnant = true]
 17
@@ -1398,10 +1380,10 @@ YEARS
 11
 
 MONITOR
-346
-519
-450
-564
+228
+484
+332
+529
 NIL
 SOLD_MALES
 17
@@ -1409,10 +1391,10 @@ SOLD_MALES
 11
 
 MONITOR
-346
-566
-450
-611
+334
+484
+438
+529
 NIL
 SOLD_FEMALES
 17
@@ -1420,10 +1402,10 @@ SOLD_FEMALES
 11
 
 MONITOR
-451
-519
-602
-564
+439
+484
+590
+529
 NIL
 SOLD_CHILDREN_MALES
 17
@@ -1431,10 +1413,10 @@ SOLD_CHILDREN_MALES
 11
 
 MONITOR
-451
-566
-602
-611
+591
+484
+742
+529
 NIL
 SOLD_CHILDREN_FEMALES
 17
@@ -1442,10 +1424,10 @@ SOLD_CHILDREN_FEMALES
 11
 
 MONITOR
-604
-544
-671
-589
+744
+483
+811
+528
 SOLD
 SOLD_MALES + SOLD_FEMALES + SOLD_CHILDREN_FEMALES + SOLD_CHILDREN_MALES
 17
@@ -1453,11 +1435,11 @@ SOLD_MALES + SOLD_FEMALES + SOLD_CHILDREN_FEMALES + SOLD_CHILDREN_MALES
 11
 
 MONITOR
-1104
-489
-1210
-534
-NIL
+1065
+498
+1370
+543
+MONEY BALANCE
 MONEY
 2
 1
@@ -1480,6 +1462,7 @@ false
 "" ""
 PENS
 "pen-0" 1.0 0 -16777216 true "" "plot count pigs"
+"pen-2" 1.0 0 -5298144 true "" "plot count pigs with [maturity = false]"
 
 PLOT
 1375
@@ -1519,7 +1502,7 @@ PLOT
 595
 1729
 801
-PREGNANCY_PROBABILITY
+ESTRUS-PROBABILITY
 PROBABILITY
 DAYS
 0.0
@@ -1530,7 +1513,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot PREGNANCY_PROBABILITY"
+"default" 1.0 0 -16777216 true "" "plot mean [estrus-probability] of pigs with [male = false and maturity = true]"
 
 SWITCH
 816
@@ -1552,7 +1535,7 @@ SWITCH_DAYS
 SWITCH_DAYS
 7
 32
-21.0
+14.0
 7
 1
 NIL
@@ -1565,15 +1548,15 @@ SWITCH
 572
 ESTRUS_STIMULATION
 ESTRUS_STIMULATION
-0
+1
 1
 -1000
 
 MONITOR
-1105
-545
-1238
-590
+1066
+546
+1199
+591
 NIL
 MONEY_SWITCH_MALES
 17
@@ -1581,12 +1564,52 @@ MONEY_SWITCH_MALES
 11
 
 MONITOR
-1272
-523
-1461
-568
+1203
+546
+1371
+591
 NIL
 MONEY_ESTRUS_STIMULATION
+17
+1
+11
+
+MONITOR
+4
+542
+61
+587
+NIL
+BORN
+2
+1
+11
+
+PLOT
+65
+534
+813
+847
+BORN
+DAYS
+BORN
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot BORN"
+
+MONITOR
+106
+11
+163
+56
+NIL
+NIGHT
 17
 1
 11
